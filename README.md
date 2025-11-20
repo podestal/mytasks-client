@@ -28,7 +28,7 @@ You have two options to work with the container:
 This will build the image and immediately give you an interactive shell:
 
 ```bash
-docker-compose run --rm bun bash
+docker compose run --rm bun bash
 ```
 
 Once inside the container, start the development server:
@@ -42,13 +42,13 @@ bun run dev
 Build and start the container in detached mode:
 
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 Then access the container shell:
 
 ```bash
-docker-compose exec bun bash
+docker compose exec bun bash
 ```
 
 Start the development server:
@@ -65,16 +65,16 @@ The application will be available at:
 
 ### Accessing the Container
 
-**If the container is already running** (started with `docker-compose up -d`):
+**If the container is already running** (started with `docker compose up -d`):
 
 ```bash
-docker-compose exec bun bash
+docker compose exec bun bash
 ```
 
 **To start a new container with an interactive shell**:
 
 ```bash
-docker-compose run --rm bun bash
+docker compose run --rm bun bash
 ```
 
 The `--rm` flag automatically removes the container when you exit.
@@ -127,47 +127,47 @@ client/
 
 ```bash
 # Start containers in background (detached mode)
-docker-compose up -d
+docker compose up -d
 
 # Start containers in background and rebuild
-docker-compose up -d --build
+docker compose up -d --build
 
 # Run container with interactive shell (one-time use, auto-removes on exit)
-docker-compose run --rm bun bash
+docker compose run --rm bun bash
 
 # Stop containers
-docker-compose down
+docker compose down
 
 # Stop and remove volumes
-docker-compose down -v
+docker compose down -v
 ```
 
-**Note**: `docker-compose up` runs containers in the foreground. For development, use `docker-compose up -d` (background) or `docker-compose run --rm bun bash` (interactive shell).
+**Note**: `docker compose up` runs containers in the foreground. For development, use `docker compose up -d` (background) or `docker compose run --rm bun bash` (interactive shell).
 
 ### Container Management
 
 ```bash
 # View running containers
-docker-compose ps
+docker compose ps
 
 # View logs
-docker-compose logs
+docker compose logs
 
 # View logs with follow
-docker-compose logs -f
+docker compose logs -f
 
 # Execute command in container
-docker-compose exec bun <command>
+docker compose exec bun <command>
 
 # Access container shell
-docker-compose exec bun bash
+docker compose exec bun bash
 ```
 
 ### Image Management
 
 ```bash
 # Rebuild image without cache
-docker-compose build --no-cache
+docker compose build --no-cache
 
 # Remove unused images
 docker image prune
@@ -181,7 +181,7 @@ If you see an error that port 5173 is already in use:
 
 ```bash
 # Stop all containers
-docker-compose down
+docker compose down
 
 # Check if port is in use
 lsof -i :5173
@@ -194,20 +194,20 @@ kill -9 <PID>
 
 ```bash
 # Check container logs
-docker-compose logs bun
+docker compose logs bun
 
 # Rebuild from scratch
-docker-compose down
-docker-compose build --no-cache
-docker-compose up
+docker compose down
+docker compose build --no-cache
+docker compose up
 ```
 
 ### Dependencies Not Installing
 
 ```bash
 # Remove node_modules and reinstall
-docker-compose exec bun rm -rf node_modules
-docker-compose exec bun bun install
+docker compose exec bun rm -rf node_modules
+docker compose exec bun bun install
 ```
 
 ### Changes Not Reflecting
@@ -216,11 +216,11 @@ The volume mount should automatically sync changes. If not:
 
 ```bash
 # Restart the container
-docker-compose restart
+docker compose restart
 
 # Or rebuild
-docker-compose down
-docker-compose up --build
+docker compose down
+docker compose up --build
 ```
 
 ### Permission Issues
@@ -254,7 +254,7 @@ To build for production:
 
 ```bash
 # Enter container
-docker-compose exec bun bash
+docker compose exec bun bash
 
 # Build
 bun run build
