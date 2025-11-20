@@ -1,4 +1,6 @@
+import axios from 'axios'
 import { FolderKanban, Calendar, CheckCircle2, XCircle, Clock, Rocket, TrendingUp } from 'lucide-react'
+import { useEffect } from 'react'
 
 // Mock data based on your backend schema
 const mockProjects = [
@@ -163,9 +165,17 @@ const formatDate = (dateString: string) => {
 }
 
 const ProjectsPage = () => {
+
+    useEffect(() => {
+        axios.get('http://localhost:3000/api/projects').then((response) => {
+          console.log(response.data)
+        }).catch((error) => {
+          console.error(error)
+        })
+      }, [])
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-8">
-      <div className="w-[90%] sm:w-[85%] md:w-[80%] lg:w-[75%] xl:max-w-6xl ml-0 mr-auto">
+      <div className="w-[90%] sm:w-[85%] md:w-[80%] lg:w-[90%] xl:w-[95%] 2xl:max-w-6xl ml-0 mr-auto">
         {/* Header */}
         <div className="mb-10">
           <div className="flex items-center gap-4 mb-4">
@@ -174,7 +184,7 @@ const ProjectsPage = () => {
             </div>
             <div>
               <h1 className="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-indigo-700 via-purple-700 to-blue-700 bg-clip-text text-transparent mb-2">
-                Project Portfolio
+                Projects
               </h1>
               <div className="flex items-center gap-2 text-gray-600">
                 <TrendingUp className="w-5 h-5" />
