@@ -21,20 +21,37 @@ cd mytasks/client
 
 ### 2. Build and Start the Docker Container
 
-Build the Docker image and start the container:
+You have two options to work with the container:
+
+#### Option A: Run Container with Interactive Shell (Recommended)
+
+This will build the image and immediately give you an interactive shell:
 
 ```bash
-docker-compose up --build
+docker-compose run --rm bun bash
 ```
 
-This command will:
-- Build the Docker image using the `Dockerfile`
-- Install all dependencies using Bun
-- Start the container and open an interactive shell
+Once inside the container, start the development server:
 
-### 3. Start the Development Server
+```bash
+bun run dev
+```
 
-Once the container is running, you'll be inside the container shell. Start the development server:
+#### Option B: Run Container in Background
+
+Build and start the container in detached mode:
+
+```bash
+docker-compose up -d --build
+```
+
+Then access the container shell:
+
+```bash
+docker-compose exec bun bash
+```
+
+Start the development server:
 
 ```bash
 bun run dev
@@ -44,30 +61,23 @@ The application will be available at:
 - **Local URL**: http://localhost:5173
 - **Network URL**: http://0.0.0.0:5173 (accessible from within Docker network)
 
-### Alternative: Run in Detached Mode
-
-If you prefer to run the container in the background:
-
-```bash
-# Start container in detached mode
-docker-compose up -d --build
-
-# Enter the container
-docker-compose exec bun bash
-
-# Start the dev server
-bun run dev
-```
-
 ## Development Workflow
 
 ### Accessing the Container
 
-To access the running container:
+**If the container is already running** (started with `docker-compose up -d`):
 
 ```bash
 docker-compose exec bun bash
 ```
+
+**To start a new container with an interactive shell**:
+
+```bash
+docker-compose run --rm bun bash
+```
+
+The `--rm` flag automatically removes the container when you exit.
 
 ### Running Commands
 
@@ -116,21 +126,23 @@ client/
 ### Starting and Stopping
 
 ```bash
-# Start containers
-docker-compose up
-
-# Start containers in background
+# Start containers in background (detached mode)
 docker-compose up -d
+
+# Start containers in background and rebuild
+docker-compose up -d --build
+
+# Run container with interactive shell (one-time use, auto-removes on exit)
+docker-compose run --rm bun bash
 
 # Stop containers
 docker-compose down
 
-# Rebuild and start
-docker-compose up --build
-
 # Stop and remove volumes
 docker-compose down -v
 ```
+
+**Note**: `docker-compose up` runs containers in the foreground. For development, use `docker-compose up -d` (background) or `docker-compose run --rm bun bash` (interactive shell).
 
 ### Container Management
 
