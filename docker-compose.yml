@@ -1,0 +1,11 @@
+services:
+  bun:
+    build: .
+    container_name: bun-client
+    working_dir: /app
+    volumes:
+      - ./app:/app
+    ports:
+      - "5173:5173"
+    tty: true
+    stdin_open: true
