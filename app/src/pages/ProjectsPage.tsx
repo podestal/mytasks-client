@@ -128,29 +128,29 @@ const getStatusConfig = (status: string) => {
       return {
         label: 'Active',
         icon: Clock,
-        className: 'bg-blue-100 text-blue-700 border-blue-200',
-        iconClassName: 'text-blue-600',
+        className: 'bg-[#1DB954]/20 text-[#1DB954] border-[#1DB954]/30',
+        iconClassName: 'text-[#1DB954]',
       }
     case 'D': // Completed
       return {
         label: 'Completed',
         icon: CheckCircle2,
-        className: 'bg-green-100 text-green-700 border-green-200',
-        iconClassName: 'text-green-600',
+        className: 'bg-[#1DB954]/20 text-[#1DB954] border-[#1DB954]/30',
+        iconClassName: 'text-[#1DB954]',
       }
     case 'C': // Canceled
       return {
         label: 'Canceled',
         icon: XCircle,
-        className: 'bg-red-100 text-red-700 border-red-200',
-        iconClassName: 'text-red-600',
+        className: 'bg-red-500/20 text-red-400 border-red-500/30',
+        iconClassName: 'text-red-400',
       }
     default:
       return {
         label: 'Unknown',
         icon: Clock,
-        className: 'bg-gray-100 text-gray-700 border-gray-200',
-        iconClassName: 'text-gray-600',
+        className: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+        iconClassName: 'text-gray-400',
       }
   }
 }
@@ -174,19 +174,19 @@ const ProjectsPage = () => {
         })
       }, [])
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4 md:p-8">
+    <div className="min-h-screen bg-[#121212] p-4 md:p-8">
       <div className="w-[90%] sm:w-[85%] md:w-[80%] lg:w-[90%] xl:w-[95%] 2xl:max-w-6xl ml-0 mr-auto">
         {/* Header */}
         <div className="mb-10">
           <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-2xl shadow-lg">
+            <div className="p-3 bg-[#1DB954] rounded-2xl shadow-lg">
               <Rocket className="w-8 h-8 text-white" />
             </div>
             <div>
-              <h1 className="text-5xl md:text-6xl font-extrabold bg-gradient-to-r from-indigo-700 via-purple-700 to-blue-700 bg-clip-text text-transparent mb-2">
+              <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-2">
                 Projects
               </h1>
-              <div className="flex items-center gap-2 text-gray-600">
+              <div className="flex items-center gap-2 text-gray-400">
                 <TrendingUp className="w-5 h-5" />
                 <p className="text-lg font-medium">
                   Track progress, manage sprints, and deliver results
@@ -206,10 +206,10 @@ const ProjectsPage = () => {
             return (
               <div
                 key={project.id}
-                className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100"
+                className="bg-[#1a1a1a] rounded-2xl shadow-lg hover:bg-[#242424] transition-all duration-300 overflow-hidden border border-gray-800"
               >
                 {/* Project Header */}
-                <div className="bg-gradient-to-r from-indigo-800 via-purple-800 to-blue-800 p-6 text-white shadow-lg">
+                <div className="bg-gradient-to-r from-[#1DB954] to-[#1ed760] p-6 text-white shadow-lg">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
@@ -217,7 +217,7 @@ const ProjectsPage = () => {
                       </div>
                       <div>
                         <h2 className="text-2xl font-bold">{project.name}</h2>
-                        <p className="text-indigo-200 text-sm mt-1">
+                        <p className="text-white/80 text-sm mt-1">
                           {totalSprints} sprint{totalSprints !== 1 ? 's' : ''} •{' '}
                           {completedSprints} completed
                         </p>
@@ -225,7 +225,7 @@ const ProjectsPage = () => {
                     </div>
                   </div>
                   {project.description && (
-                    <p className="text-indigo-100 text-sm leading-relaxed">
+                    <p className="text-white/90 text-sm leading-relaxed">
                       {project.description}
                     </p>
                   )}
@@ -250,15 +250,15 @@ const ProjectsPage = () => {
                         return (
                           <div
                             key={sprint.id}
-                            className="border border-gray-200 rounded-xl p-4 hover:border-gray-300 transition-colors bg-gray-50/50"
+                            className="border border-gray-800 rounded-xl p-4 hover:border-gray-700 transition-colors bg-[#242424]"
                           >
                             <div className="flex items-start justify-between mb-2">
                               <div className="flex-1">
-                                <h3 className="font-semibold text-gray-900 mb-1">
+                                <h3 className="font-semibold text-white mb-1">
                                   {sprint.name}
                                 </h3>
                                 {sprint.description && (
-                                  <p className="text-sm text-gray-600 mb-3">
+                                  <p className="text-sm text-gray-400 mb-3">
                                     {sprint.description}
                                   </p>
                                 )}
@@ -271,7 +271,7 @@ const ProjectsPage = () => {
                               </div>
                             </div>
 
-                            <div className="flex items-center gap-4 text-xs text-gray-500">
+                            <div className="flex items-center gap-4 text-xs text-gray-400">
                               <div className="flex items-center gap-1.5">
                                 <Calendar className="w-4 h-4" />
                                 <span>
@@ -281,10 +281,10 @@ const ProjectsPage = () => {
                                   <span
                                     className={`ml-2 px-2 py-0.5 rounded ${
                                       daysUntilDeadline < 7
-                                        ? 'bg-red-100 text-red-700'
+                                        ? 'bg-red-500/20 text-red-400'
                                         : daysUntilDeadline < 14
-                                          ? 'bg-yellow-100 text-yellow-700'
-                                          : 'bg-green-100 text-green-700'
+                                          ? 'bg-yellow-500/20 text-yellow-400'
+                                          : 'bg-[#1DB954]/20 text-[#1DB954]'
                                     }`}
                                   >
                                     {daysUntilDeadline > 0
@@ -302,18 +302,18 @@ const ProjectsPage = () => {
                 </div>
 
                 {/* Project Footer Stats */}
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                <div className="px-6 py-4 bg-[#121212] border-t border-gray-800">
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                        <span className="text-gray-600">
+                        <div className="w-2 h-2 bg-[#1DB954] rounded-full animate-pulse"></div>
+                        <span className="text-gray-400">
                           {activeSprints} active
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-green-600" />
-                        <span className="text-gray-600">
+                        <CheckCircle2 className="w-4 h-4 text-[#1DB954]" />
+                        <span className="text-gray-400">
                           {completedSprints} completed
                         </span>
                       </div>

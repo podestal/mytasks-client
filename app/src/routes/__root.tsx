@@ -10,9 +10,9 @@ interface MyRouterContext {
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
   component: () => (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-[#121212]">
       <Navigation />
-      <main className="flex-1 ml-64">
+      <main className="flex-1 ml-64 bg-[#121212]">
         <Outlet />
       </main>
       <ReactQueryDevtools />

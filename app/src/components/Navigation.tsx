@@ -38,14 +38,14 @@ const Navigation = () => {
   const location = useLocation()
 
   return (
-    <aside className="fixed left-0 top-0 h-screen w-64 bg-white border-r border-gray-200 shadow-lg flex flex-col z-50">
+    <aside className="fixed left-0 top-0 h-screen w-64 bg-black border-r border-gray-900 shadow-2xl flex flex-col z-50">
       {/* Logo/Brand */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-6 border-b border-gray-900">
         <div className="flex items-center gap-3">
-          <div className="p-2.5 bg-gradient-to-br from-indigo-600 to-purple-700 rounded-xl shadow-md">
+          <div className="p-2.5 bg-[#1DB954] rounded-xl shadow-lg">
             <FolderKanban className="w-6 h-6 text-white" />
           </div>
-          <span className="text-2xl font-bold bg-gradient-to-r from-indigo-700 to-purple-700 bg-clip-text text-transparent">
+          <span className="text-2xl font-bold text-white">
             MyTasks
           </span>
         </div>
@@ -53,7 +53,7 @@ const Navigation = () => {
 
       {/* Navigation Links */}
       <nav className="flex-1 p-4 overflow-y-auto">
-        <div className="space-y-2">
+        <div className="space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon
             const isActive = location.pathname === item.path
@@ -63,15 +63,15 @@ const Navigation = () => {
                 key={item.path}
                 to={item.path}
                 className={`
-                  flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200
+                  flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-all duration-200
                   ${
                     isActive
-                      ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md'
-                      : 'text-gray-700 hover:bg-gray-100 hover:text-indigo-600'
+                      ? 'bg-[#1DB954] text-white'
+                      : 'text-gray-400 hover:text-white hover:bg-[#1a1a1a]'
                   }
                 `}
               >
-                <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-500'}`} />
+                <Icon className={`w-5 h-5 ${isActive ? 'text-white' : 'text-gray-400'}`} />
                 <span>{item.name}</span>
               </Link>
             )
@@ -80,7 +80,7 @@ const Navigation = () => {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-200">
+      <div className="p-4 border-t border-gray-900">
         <div className="text-xs text-gray-500 text-center">
           © 2024 MyTasks
         </div>
