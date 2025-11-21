@@ -15,6 +15,7 @@ import { Route as MoneyRouteImport } from './routes/money'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as AnalyticsRouteImport } from './routes/analytics'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SprintsSprintIdRouteImport } from './routes/sprints.$sprintId'
 import { Route as DemoTanstackQueryRouteImport } from './routes/demo/tanstack-query'
 
 const SettingsRoute = SettingsRouteImport.update({
@@ -47,6 +48,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SprintsSprintIdRoute = SprintsSprintIdRouteImport.update({
+  id: '/sprints/$sprintId',
+  path: '/sprints/$sprintId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DemoTanstackQueryRoute = DemoTanstackQueryRouteImport.update({
   id: '/demo/tanstack-query',
   path: '/demo/tanstack-query',
@@ -61,6 +67,7 @@ export interface FileRoutesByFullPath {
   '/projects': typeof ProjectsRoute
   '/settings': typeof SettingsRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/sprints/$sprintId': typeof SprintsSprintIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -70,6 +77,7 @@ export interface FileRoutesByTo {
   '/projects': typeof ProjectsRoute
   '/settings': typeof SettingsRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/sprints/$sprintId': typeof SprintsSprintIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -80,6 +88,7 @@ export interface FileRoutesById {
   '/projects': typeof ProjectsRoute
   '/settings': typeof SettingsRoute
   '/demo/tanstack-query': typeof DemoTanstackQueryRoute
+  '/sprints/$sprintId': typeof SprintsSprintIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -91,6 +100,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/settings'
     | '/demo/tanstack-query'
+    | '/sprints/$sprintId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/settings'
     | '/demo/tanstack-query'
+    | '/sprints/$sprintId'
   id:
     | '__root__'
     | '/'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/projects'
     | '/settings'
     | '/demo/tanstack-query'
+    | '/sprints/$sprintId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -119,6 +131,7 @@ export interface RootRouteChildren {
   ProjectsRoute: typeof ProjectsRoute
   SettingsRoute: typeof SettingsRoute
   DemoTanstackQueryRoute: typeof DemoTanstackQueryRoute
+  SprintsSprintIdRoute: typeof SprintsSprintIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -165,6 +178,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/sprints/$sprintId': {
+      id: '/sprints/$sprintId'
+      path: '/sprints/$sprintId'
+      fullPath: '/sprints/$sprintId'
+      preLoaderRoute: typeof SprintsSprintIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/demo/tanstack-query': {
       id: '/demo/tanstack-query'
       path: '/demo/tanstack-query'
@@ -183,6 +203,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProjectsRoute: ProjectsRoute,
   SettingsRoute: SettingsRoute,
   DemoTanstackQueryRoute: DemoTanstackQueryRoute,
+  SprintsSprintIdRoute: SprintsSprintIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

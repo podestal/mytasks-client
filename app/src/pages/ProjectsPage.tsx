@@ -2,6 +2,7 @@ import axios from 'axios'
 import { FolderKanban, Calendar, CheckCircle2, XCircle, Clock, Rocket, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Link } from '@tanstack/react-router'
 
 // Mock data based on your backend schema
 const mockProjects = [
@@ -311,14 +312,18 @@ const ProjectsPage = () => {
                               )
 
                               return (
-                                <motion.div
+                                <Link
                                   key={sprint.id}
-                                  initial={{ opacity: 0, x: -20 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ duration: 0.3, delay: sprintIndex * 0.05 }}
-                                  whileHover={{ x: 4 }}
-                                  className="border border-gray-800 rounded-xl p-4 hover:border-gray-700 transition-colors bg-[#242424]"
+                                  to="/sprints/$sprintId"
+                                  params={{ sprintId: sprint.id.toString() }}
                                 >
+                                  <motion.div
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.3, delay: sprintIndex * 0.05 }}
+                                    whileHover={{ x: 4, scale: 1.01 }}
+                                    className="border border-gray-800 rounded-xl p-4 hover:border-[#1DB954]/50 transition-colors bg-[#242424] cursor-pointer"
+                                  >
                             <div className="flex items-start justify-between mb-2">
                               <div className="flex-1">
                                 <h3 className="font-semibold text-white mb-1">
@@ -361,7 +366,8 @@ const ProjectsPage = () => {
                                 )}
                               </div>
                                 </div>
-                              </motion.div>
+                                  </motion.div>
+                                </Link>
                             )
                           })
                         )}
