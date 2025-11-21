@@ -6,10 +6,8 @@ import {
   Calendar, 
   CheckCircle2, 
   Clock, 
-  AlertCircle,
   Trash2,
-  User,
-  Tag
+  User
 } from 'lucide-react'
 import axios from 'axios'
 
@@ -242,7 +240,7 @@ const SprintPage = () => {
 
         {/* Kanban Board */}
         <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          {columns.map((column, columnIndex) => (
+          {columns.map((column) => (
             <motion.div
               key={column.id}
               initial={{ opacity: 0, y: 20 }}
@@ -250,12 +248,13 @@ const SprintPage = () => {
                 opacity: 1, 
                 y: 0,
                 scale: draggedOverColumn === column.id ? 1.02 : 1,
-                borderColor: draggedOverColumn === column.id ? (column.id === 'delete' ? 'rgb(239 68 68)' : '#1DB954') : undefined
               }}
               transition={{ duration: 0.2 }}
-              className={`flex flex-col h-full min-h-[500px] rounded-xl border-2 ${column.color} p-4 transition-all ${
-                draggedOverColumn === column.id ? 'ring-2 ring-offset-2 ring-offset-[#121212]' : ''
-              } ${draggedOverColumn === column.id && column.id === 'delete' ? 'ring-red-500' : draggedOverColumn === column.id ? 'ring-[#1DB954]' : ''}`}
+              className={`flex flex-col ${
+                column.id === 'delete' 
+                  ? 'w-full aspect-square max-w-[200px] mx-auto md:mx-0' 
+                  : 'h-full min-h-[500px]'
+              } transition-all`}
               onDragOver={(e) => {
                 e.preventDefault()
                 e.stopPropagation()
@@ -271,7 +270,9 @@ const SprintPage = () => {
               onDrop={handleDragEnd}
             >
               {/* Column Header */}
-              <div className="flex items-center justify-between mb-4">
+              <div className={`flex items-center justify-between mb-4 rounded-xl border-2 ${column.color} p-3 ${
+                draggedOverColumn === column.id ? 'ring-2 ring-offset-2 ring-offset-[#121212]' : ''
+              } ${draggedOverColumn === column.id && column.id === 'delete' ? 'ring-red-500' : draggedOverColumn === column.id ? 'ring-[#1DB954]' : ''}`}>
                 <h2 className="font-semibold text-white text-sm uppercase tracking-wide">
                   {column.label}
                 </h2>
@@ -281,11 +282,13 @@ const SprintPage = () => {
               </div>
 
               {/* Tasks in this column */}
-              <div className="flex-1 space-y-3">
+              <div className={column.id === 'delete' ? 'flex-1' : 'flex-1 space-y-3'}>
                 <AnimatePresence>
                   {column.id === 'delete' ? (
-                    <div className="flex items-center justify-center h-full">
-                      <div className="text-center">
+                    <div className={`flex items-center justify-center h-full rounded-xl border-2 ${column.color} ${
+                      draggedOverColumn === column.id ? 'ring-2 ring-red-500' : ''
+                    }`}>
+                      <div className="text-center p-4">
                         <Trash2 className="w-12 h-12 text-red-400/50 mx-auto mb-2" />
                         <p className="text-xs text-gray-500">Drop tasks here to delete</p>
                       </div>
@@ -299,24 +302,28 @@ const SprintPage = () => {
                         exit={{ opacity: 0, scale: 0.9, x: -100 }}
                         transition={{ duration: 0.2, delay: taskIndex * 0.05 }}
                         draggable
-                        onDragStart={(e) => {
-                          handleDragStart(task)
-                          e.dataTransfer.effectAllowed = 'move'
-                          e.dataTransfer.setData('text/html', task.id.toString())
-                          // Create a custom drag image
-                          const dragImage = e.currentTarget.cloneNode(true) as HTMLElement
-                          dragImage.style.opacity = '0.5'
-                          document.body.appendChild(dragImage)
-                          e.dataTransfer.setDragImage(dragImage, 0, 0)
-                          setTimeout(() => document.body.removeChild(dragImage), 0)
-                        }}
+                        {...({
+                          onDragStart: (e: React.DragEvent<HTMLDivElement>) => {
+                            handleDragStart(task)
+                            e.dataTransfer.effectAllowed = 'move'
+                            e.dataTransfer.setData('text/html', task.id.toString())
+                            // Create a custom drag image
+                            if (e.currentTarget) {
+                              const dragImage = (e.currentTarget as HTMLElement).cloneNode(true) as HTMLElement
+                              dragImage.style.opacity = '0.5'
+                              document.body.appendChild(dragImage)
+                              e.dataTransfer.setDragImage(dragImage, 0, 0)
+                              setTimeout(() => document.body.removeChild(dragImage), 0)
+                            }
+                          }
+                        } as any)}
                         whileDrag={{ 
                           scale: 1.1, 
                           rotate: 3,
                           opacity: 0.8,
                           zIndex: 50
                         }}
-                        className="bg-[#242424] rounded-lg p-3 border border-gray-800 hover:border-gray-700 hover:border-[#1DB954]/50 cursor-move shadow-lg transition-all"
+                        className="bg-black rounded-lg p-3 border border-gray-700 hover:border-[#1DB954]/50 cursor-move shadow-lg transition-all"
                       >
                         <div className="mb-2">
                           <h3 className="font-semibold text-white text-sm mb-1">
