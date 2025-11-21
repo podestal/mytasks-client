@@ -1,16 +1,22 @@
 import type { Project } from "@/services/api/projectService"
 import { motion } from "framer-motion"
-import { FolderKanban } from "lucide-react"
+import { ChevronDown, ChevronUp, FolderKanban } from "lucide-react"
+import { useState } from "react"
+import SprintsList from "../sprints/SprintsList"
 
 interface Props {
     project: Project
     index: number
 }
 
+const sprints = ['sdasd', 'asdasd', 'asdasd']
+
 const PorjectCard = ({ project, index }: Props) => {
     // const activeSprints = project.sprints.filter((s) => s.status === 'A').length
     // const completedSprints = project.sprints.filter((s) => s.status === 'D').length
     // const totalSprints = project.sprints.length
+
+    const [expanded, setExpanded] = useState(false)
   return (
     <motion.div
         key={project.id}
@@ -41,27 +47,28 @@ const PorjectCard = ({ project, index }: Props) => {
                 </p>
               </div>
             </div>
-            {/* {project.sprints.length > 0 && (
+            {project.totalSprints > 0 && (
               <motion.button
-                onClick={() => toggleSprints(project.id)}
+                onClick={() => setExpanded(!expanded)}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
                 className="p-2 hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
-                aria-label={expandedProjects.has(project.id) ? 'Hide sprints' : 'Show sprints'}
+                aria-label={expanded ? 'Hide sprints' : 'Show sprints'}
               >
-                {expandedProjects.has(project.id) ? (
+                {expanded ? (
                   <ChevronUp className="w-5 h-5 text-[#1DB954]" />
                 ) : (
                   <ChevronDown className="w-5 h-5 text-gray-400" />
                 )}
               </motion.button>
-            )} */}
+            )}
           </div>
           {project.description && (
             <p className="text-gray-300 text-xs leading-relaxed">
               {project.description}
             </p>
           )}
+          {expanded && <SprintsList projectId={project.id} />}
         </motion.div>
     </motion.div>
   )
