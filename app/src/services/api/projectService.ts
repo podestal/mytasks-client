@@ -6,6 +6,8 @@ export interface Project {
     description: string
     created_at: string
     updated_at: string
+    totalSprints: number
+    completedSprints: number
 }
 
 interface Props {

@@ -1,4 +1,5 @@
 import useGetProjects from "@/hooks/api/projects/useGetProjects"
+import PorjectCard from "./PorjectCard"
 
 
 const ProjectsList = () => {
@@ -8,9 +9,12 @@ const ProjectsList = () => {
     if (isError) return <p className="text-red-500 text-center py-8">Error: {error?.message}</p>
     if (isSuccess) 
   return (
-    <div>
-        <>{console.log('projects', projects)}</>
-    </div>
+    <>
+    <>{(console.log('projects', projects))}</>
+    {projects.map((project, index) => (
+        <PorjectCard key={project.id} project={project} index={index} />
+    ))}
+    </>
   )
 }
 
