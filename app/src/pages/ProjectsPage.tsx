@@ -192,35 +192,6 @@ const ProjectsPage = () => {
   return (
     <div className="min-h-screen bg-[#121212] p-4 md:p-8">
       <div className="w-[90%] sm:w-[85%] md:w-[80%] lg:w-[90%] xl:w-[95%] 2xl:max-w-6xl ml-0 mr-auto">
-        {/* Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="mb-10"
-        >
-          <div className="flex items-center gap-4 mb-4">
-            <motion.div
-              initial={{ scale: 0, rotate: -180 }}
-              animate={{ scale: 1, rotate: 0 }}
-              transition={{ duration: 0.5, type: "spring" }}
-              className="p-3 bg-[#1DB954] rounded-2xl shadow-lg"
-            >
-              <Rocket className="w-8 h-8 text-white" />
-            </motion.div>
-            <div>
-              <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-2">
-                Projects
-              </h1>
-              <div className="flex items-center gap-2 text-gray-400">
-                <TrendingUp className="w-5 h-5" />
-                <p className="text-lg font-medium">
-                  Track progress, manage sprints, and deliver results
-                </p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
 
       <ProjectsMain />
       </div>

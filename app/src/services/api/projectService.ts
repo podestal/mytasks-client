@@ -10,9 +10,13 @@ export interface Project {
     completedSprints: number
 }
 
+export type CreateUpdateProject = Omit<Project, 'id' | 'created_at' | 'updated_at' | 'totalSprints' | 'completedSprints'> 
+
 interface Props {
     projectId?: number
 }
+
+export const createProjectService = new APIClient<Project, CreateUpdateProject>('/projects')
 
 const getProjectsService = ({ projectId }: Props) => {
     let url = '/projects'
@@ -20,7 +24,7 @@ const getProjectsService = ({ projectId }: Props) => {
         url += `/${projectId}`
     }
 
-    return new APIClient<Project[]>(url)
+    return new APIClient<Project[], CreateUpdateProject>(url)
 }
 
 export default getProjectsService

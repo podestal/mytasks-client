@@ -17,7 +17,7 @@ const PorjectCard = ({ project, index }: Props) => {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4, delay: index * 0.1 }}
-        className="bg-[#1a1a1a] rounded-2xl shadow-lg hover:bg-[#242424] transition-all duration-300 overflow-hidden border border-gray-800"
+        className="bg-[#1a1a1a] rounded-2xl my-4 shadow-lg hover:bg-[#242424] transition-all duration-300 overflow-hidden border border-gray-800"
     >
                 <motion.div
           initial={{ opacity: 0 }}

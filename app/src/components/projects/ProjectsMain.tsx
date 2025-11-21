@@ -1,8 +1,46 @@
+import { useState } from "react"
+import { motion } from "framer-motion"
 import ProjectsList from "./ProjectsList"
+import CreateProject from "./CreateProject"
+import { Rocket, TrendingUp, Plus } from "lucide-react"
 
 const ProjectsMain = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
   return (
     <>
+    {/* Header */}
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="mb-10"
+    >
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-4">
+          <motion.div
+            initial={{ scale: 0, rotate: -180 }}
+            animate={{ scale: 1, rotate: 0 }}
+            transition={{ duration: 0.5, type: "spring" }}
+            className="p-3 bg-[#1DB954] rounded-2xl shadow-lg"
+          >
+            <Rocket className="w-8 h-8 text-white" />
+          </motion.div>
+          <div>
+            <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-2">
+              Projects
+            </h1>
+            <div className="flex items-center gap-2 text-gray-400">
+              <TrendingUp className="w-5 h-5" />
+              <p className="text-lg font-medium">
+                Track progress, manage sprints, and deliver results
+              </p>
+            </div>
+          </div>
+        </div>
+        <CreateProject isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      </div>
+    </motion.div>
     <ProjectsList />
     </>
     // filters
