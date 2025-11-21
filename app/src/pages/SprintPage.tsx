@@ -1,5 +1,5 @@
 import { useParams, Link } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   ArrowLeft, 
@@ -136,20 +136,36 @@ const SprintPage = () => {
     })
   }, [sprintId])
 
-  const handleDragStart = (task: Task) => {
-    setDraggedTask(task)
-  }
+  // Memoize tasks by status to prevent unnecessary recalculations
+  const tasksByStatus = useMemo(() => {
+    const grouped: Record<string, Task[]> = {
+      todo: [],
+      in_progress: [],
+      in_review: [],
+      done: [],
+    }
+    tasks.forEach((task) => {
+      if (grouped[task.status]) {
+        grouped[task.status].push(task)
+      }
+    })
+    return grouped
+  }, [tasks])
 
-  const handleDragEnd = (e: React.DragEvent) => {
+  const handleDragStart = useCallback((task: Task) => {
+    setDraggedTask(task)
+  }, [])
+
+  const handleDragEnd = useCallback((e: React.DragEvent) => {
     e.preventDefault()
     if (draggedTask && draggedOverColumn) {
       if (draggedOverColumn === 'delete') {
         // Delete task
-        setTasks(tasks.filter((t) => t.id !== draggedTask.id))
+        setTasks((prevTasks) => prevTasks.filter((t) => t.id !== draggedTask.id))
       } else if (draggedOverColumn !== draggedTask.status) {
         // Update task status only if it changed
-        setTasks(
-          tasks.map((t) =>
+        setTasks((prevTasks) =>
+          prevTasks.map((t) =>
             t.id === draggedTask.id
               ? { ...t, status: draggedOverColumn as TaskStatus, updated_at: new Date().toISOString() }
               : t
@@ -159,12 +175,27 @@ const SprintPage = () => {
     }
     setDraggedTask(null)
     setDraggedOverColumn(null)
-  }
+  }, [draggedTask, draggedOverColumn])
 
-  const getTasksByStatus = (status: string) => {
+  const handleDragOver = useCallback((e: React.DragEvent, columnId: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDraggedOverColumn(columnId)
+  }, [])
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    e.preventDefault()
+    // Only clear if we're actually leaving (not entering a child element)
+    const relatedTarget = e.relatedTarget as HTMLElement | null
+    if (!relatedTarget || !(e.currentTarget as HTMLElement).contains(relatedTarget)) {
+      setDraggedOverColumn(null)
+    }
+  }, [])
+
+  const getTasksByStatus = useCallback((status: string) => {
     if (status === 'delete') return []
-    return tasks.filter((task) => task.status === status)
-  }
+    return tasksByStatus[status] || []
+  }, [tasksByStatus])
 
   const daysUntilDeadline = Math.ceil(
     (new Date(mockSprint.deadline).getTime() - new Date().getTime()) /
@@ -247,32 +278,24 @@ const SprintPage = () => {
               animate={{ 
                 opacity: 1, 
                 y: 0,
-                scale: draggedOverColumn === column.id ? 1.02 : 1,
               }}
               transition={{ duration: 0.2 }}
               className={`flex flex-col ${
                 column.id === 'delete' 
                   ? 'w-full aspect-square max-w-[200px] mx-auto md:mx-0' 
                   : 'h-full min-h-[500px]'
-              } transition-all`}
-              onDragOver={(e) => {
-                e.preventDefault()
-                e.stopPropagation()
-                setDraggedOverColumn(column.id)
+              } ${draggedOverColumn === column.id ? 'ring-2 ring-[#1DB954] ring-offset-2 ring-offset-[#121212]' : ''}`}
+              style={{
+                willChange: draggedOverColumn === column.id ? 'transform' : 'auto',
               }}
-              onDragLeave={(e) => {
-                e.preventDefault()
-                // Only clear if we're leaving the column area
-                if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-                  setDraggedOverColumn(null)
-                }
-              }}
+              onDragOver={(e) => handleDragOver(e, column.id)}
+              onDragLeave={handleDragLeave}
               onDrop={handleDragEnd}
             >
               {/* Column Header */}
               <div className={`flex items-center justify-between mb-4 rounded-xl border-2 ${column.color} p-3 ${
-                draggedOverColumn === column.id ? 'ring-2 ring-offset-2 ring-offset-[#121212]' : ''
-              } ${draggedOverColumn === column.id && column.id === 'delete' ? 'ring-red-500' : draggedOverColumn === column.id ? 'ring-[#1DB954]' : ''}`}>
+                draggedOverColumn === column.id && column.id === 'delete' ? 'ring-2 ring-red-500 ring-offset-2 ring-offset-[#121212]' : ''
+              }`}>
                 <h2 className="font-semibold text-white text-sm uppercase tracking-wide">
                   {column.label}
                 </h2>
@@ -294,36 +317,57 @@ const SprintPage = () => {
                       </div>
                     </div>
                   ) : (
-                    getTasksByStatus(column.id).map((task, taskIndex) => (
+                    getTasksByStatus(column.id).map((task) => (
                       <motion.div
                         key={task.id}
                         initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: 1, scale: 1 }}
+                        animate={{ opacity: draggedTask?.id === task.id ? 0.5 : 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9, x: -100 }}
-                        transition={{ duration: 0.2, delay: taskIndex * 0.05 }}
+                        transition={{ duration: 0.15 }}
                         draggable
                         {...({
                           onDragStart: (e: React.DragEvent<HTMLDivElement>) => {
                             handleDragStart(task)
                             e.dataTransfer.effectAllowed = 'move'
                             e.dataTransfer.setData('text/html', task.id.toString())
-                            // Create a custom drag image
-                            if (e.currentTarget) {
-                              const dragImage = (e.currentTarget as HTMLElement).cloneNode(true) as HTMLElement
-                              dragImage.style.opacity = '0.5'
-                              document.body.appendChild(dragImage)
-                              e.dataTransfer.setDragImage(dragImage, 0, 0)
-                              setTimeout(() => document.body.removeChild(dragImage), 0)
-                            }
+                            
+                            // Create a translucent drag preview
+                            const dragElement = e.currentTarget.cloneNode(true) as HTMLElement
+                            dragElement.style.opacity = '0.6'
+                            dragElement.style.transform = 'rotate(3deg)'
+                            dragElement.style.pointerEvents = 'none'
+                            dragElement.style.position = 'absolute'
+                            dragElement.style.top = '-1000px'
+                            dragElement.style.width = e.currentTarget.offsetWidth + 'px'
+                            dragElement.style.zIndex = '9999'
+                            
+                            document.body.appendChild(dragElement)
+                            
+                            // Calculate offset to center the drag image on cursor
+                            const rect = e.currentTarget.getBoundingClientRect()
+                            const offsetX = e.clientX - rect.left
+                            const offsetY = e.clientY - rect.top
+                            
+                            e.dataTransfer.setDragImage(dragElement, offsetX, offsetY)
+                            
+                            // Clean up after a short delay
+                            setTimeout(() => {
+                              if (document.body.contains(dragElement)) {
+                                document.body.removeChild(dragElement)
+                              }
+                            }, 0)
                           }
                         } as any)}
-                        whileDrag={{ 
-                          scale: 1.1, 
-                          rotate: 3,
-                          opacity: 0.8,
-                          zIndex: 50
+                        className={`bg-black rounded-lg p-3 border border-gray-700 hover:border-[#1DB954]/50 cursor-grab shadow-lg transition-opacity duration-150 ${
+                          draggedTask?.id === task.id ? 'opacity-50' : ''
+                        }`}
+                        style={{
+                          willChange: 'opacity',
+                          touchAction: 'none',
                         }}
-                        className="bg-black rounded-lg p-3 border border-gray-700 hover:border-[#1DB954]/50 cursor-move shadow-lg transition-all"
+                        onDragEnd={(e) => {
+                          (e.currentTarget as HTMLElement).style.cursor = 'grab'
+                        }}
                       >
                         <div className="mb-2">
                           <h3 className="font-semibold text-white text-sm mb-1">
