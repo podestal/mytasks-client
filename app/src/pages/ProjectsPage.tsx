@@ -1,6 +1,7 @@
 import axios from 'axios'
-import { FolderKanban, Calendar, CheckCircle2, XCircle, Clock, Rocket, TrendingUp } from 'lucide-react'
-import { useEffect } from 'react'
+import { FolderKanban, Calendar, CheckCircle2, XCircle, Clock, Rocket, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 
 // Mock data based on your backend schema
 const mockProjects = [
@@ -165,23 +166,46 @@ const formatDate = (dateString: string) => {
 }
 
 const ProjectsPage = () => {
+  const [expandedProjects, setExpandedProjects] = useState<Set<number>>(new Set())
 
-    useEffect(() => {
-        axios.get('http://localhost:3000/api/projects').then((response) => {
-          console.log(response.data)
-        }).catch((error) => {
-          console.error(error)
-        })
-      }, [])
+  const toggleSprints = (projectId: number) => {
+    setExpandedProjects((prev) => {
+      const newSet = new Set(prev)
+      if (newSet.has(projectId)) {
+        newSet.delete(projectId)
+      } else {
+        newSet.add(projectId)
+      }
+      return newSet
+    })
+  }
+
+  useEffect(() => {
+    axios.get('http://localhost:3000/api/projects').then((response) => {
+      console.log(response.data)
+    }).catch((error) => {
+      console.error(error)
+    })
+  }, [])
   return (
     <div className="min-h-screen bg-[#121212] p-4 md:p-8">
       <div className="w-[90%] sm:w-[85%] md:w-[80%] lg:w-[90%] xl:w-[95%] 2xl:max-w-6xl ml-0 mr-auto">
         {/* Header */}
-        <div className="mb-10">
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mb-10"
+        >
           <div className="flex items-center gap-4 mb-4">
-            <div className="p-3 bg-[#1DB954] rounded-2xl shadow-lg">
+            <motion.div
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              transition={{ duration: 0.5, type: "spring" }}
+              className="p-3 bg-[#1DB954] rounded-2xl shadow-lg"
+            >
               <Rocket className="w-8 h-8 text-white" />
-            </div>
+            </motion.div>
             <div>
               <h1 className="text-5xl md:text-6xl font-extrabold text-white mb-2">
                 Projects
@@ -194,64 +218,107 @@ const ProjectsPage = () => {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* Projects List */}
         <div className="space-y-6">
-          {mockProjects.map((project) => {
+          {mockProjects.map((project, index) => {
             const activeSprints = project.sprints.filter((s) => s.status === 'A').length
             const completedSprints = project.sprints.filter((s) => s.status === 'D').length
             const totalSprints = project.sprints.length
 
             return (
-              <div
+              <motion.div
                 key={project.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
                 className="bg-[#1a1a1a] rounded-2xl shadow-lg hover:bg-[#242424] transition-all duration-300 overflow-hidden border border-gray-800"
               >
                 {/* Project Header */}
-                <div className="bg-gradient-to-r from-[#1DB954] to-[#1ed760] p-6 text-white shadow-lg">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-                        <FolderKanban className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-bold">{project.name}</h2>
-                        <p className="text-white/80 text-sm mt-1">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 + 0.2 }}
+                  className="bg-[#1a1a1a] border-l-4 border-[#1DB954] p-4 shadow-lg"
+                >
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-3 flex-1">
+                      <motion.div
+                        whileHover={{ scale: 1.1, rotate: 5 }}
+                        className="p-2 bg-[#1DB954] rounded-lg shadow-sm"
+                      >
+                        <FolderKanban className="w-5 h-5 text-white" />
+                      </motion.div>
+                      <div className="flex-1">
+                        <h2 className="text-xl font-bold text-white">{project.name}</h2>
+                        <p className="text-gray-400 text-xs mt-1">
                           {totalSprints} sprint{totalSprints !== 1 ? 's' : ''} •{' '}
-                          {completedSprints} completed
+                          <span className="text-[#1DB954]">{completedSprints} completed</span>
                         </p>
                       </div>
                     </div>
+                    {project.sprints.length > 0 && (
+                      <motion.button
+                        onClick={() => toggleSprints(project.id)}
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="p-2 hover:bg-gray-800 rounded-lg transition-colors"
+                        aria-label={expandedProjects.has(project.id) ? 'Hide sprints' : 'Show sprints'}
+                      >
+                        {expandedProjects.has(project.id) ? (
+                          <ChevronUp className="w-5 h-5 text-[#1DB954]" />
+                        ) : (
+                          <ChevronDown className="w-5 h-5 text-gray-400" />
+                        )}
+                      </motion.button>
+                    )}
                   </div>
                   {project.description && (
-                    <p className="text-white/90 text-sm leading-relaxed">
+                    <p className="text-gray-300 text-xs leading-relaxed">
                       {project.description}
                     </p>
                   )}
-                </div>
+                </motion.div>
 
                 {/* Sprints Section */}
-                <div className="p-6">
-                  <div className="space-y-3">
-                    {project.sprints.length === 0 ? (
-                      <p className="text-gray-400 text-center py-8">
-                        No sprints yet
-                      </p>
-                    ) : (
-                      project.sprints.map((sprint) => {
-                        const statusConfig = getStatusConfig(sprint.status)
-                        const StatusIcon = statusConfig.icon
-                        const daysUntilDeadline = Math.ceil(
-                          (new Date(sprint.deadline).getTime() - new Date().getTime()) /
-                            (1000 * 60 * 60 * 24)
-                        )
+                <AnimatePresence>
+                  {expandedProjects.has(project.id) && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.3, ease: 'easeInOut' }}
+                      className="overflow-hidden"
+                    >
+                      <div className="p-6 pt-4">
+                        <div className="space-y-3">
+                          {project.sprints.length === 0 ? (
+                            <motion.p
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              className="text-gray-400 text-center py-8"
+                            >
+                              No sprints yet
+                            </motion.p>
+                          ) : (
+                            project.sprints.map((sprint, sprintIndex) => {
+                              const statusConfig = getStatusConfig(sprint.status)
+                              const StatusIcon = statusConfig.icon
+                              const daysUntilDeadline = Math.ceil(
+                                (new Date(sprint.deadline).getTime() - new Date().getTime()) /
+                                  (1000 * 60 * 60 * 24)
+                              )
 
-                        return (
-                          <div
-                            key={sprint.id}
-                            className="border border-gray-800 rounded-xl p-4 hover:border-gray-700 transition-colors bg-[#242424]"
-                          >
+                              return (
+                                <motion.div
+                                  key={sprint.id}
+                                  initial={{ opacity: 0, x: -20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  transition={{ duration: 0.3, delay: sprintIndex * 0.05 }}
+                                  whileHover={{ x: 4 }}
+                                  className="border border-gray-800 rounded-xl p-4 hover:border-gray-700 transition-colors bg-[#242424]"
+                                >
                             <div className="flex items-start justify-between mb-2">
                               <div className="flex-1">
                                 <h3 className="font-semibold text-white mb-1">
@@ -293,16 +360,24 @@ const ProjectsPage = () => {
                                   </span>
                                 )}
                               </div>
-                            </div>
-                          </div>
-                        )
-                      })
-                    )}
-                  </div>
-                </div>
+                                </div>
+                              </motion.div>
+                            )
+                          })
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
                 {/* Project Footer Stats */}
-                <div className="px-6 py-4 bg-[#121212] border-t border-gray-800">
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 + 0.3 }}
+                  className="px-6 py-4 bg-[#121212] border-t border-gray-800"
+                >
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-4">
                       <div className="flex items-center gap-2">
@@ -322,8 +397,8 @@ const ProjectsPage = () => {
                       Updated {formatDate(project.updated_at)}
                     </span>
                   </div>
-                </div>
-              </div>
+                </motion.div>
+              </motion.div>
             )
           })}
         </div>
