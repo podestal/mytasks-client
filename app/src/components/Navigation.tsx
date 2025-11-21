@@ -113,7 +113,7 @@ const Navigation = () => {
         className="p-4 border-t border-gray-900"
       >
         <div className="text-xs text-gray-500 text-center">
-          © 2024 MyTasks
+          © {new Date().getFullYear()} MyTasks
         </div>
       </motion.div>
     </motion.aside>
