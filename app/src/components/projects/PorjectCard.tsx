@@ -2,20 +2,14 @@ import type { Project } from "@/services/api/projectService"
 import { motion } from "framer-motion"
 import { ChevronDown, ChevronUp, FolderKanban } from "lucide-react"
 import { useState } from "react"
-import SprintsList from "../sprints/SprintsList"
+import SprintMain from "../sprints/SprintMain"
 
 interface Props {
     project: Project
     index: number
 }
 
-const sprints = ['sdasd', 'asdasd', 'asdasd']
-
 const PorjectCard = ({ project, index }: Props) => {
-    // const activeSprints = project.sprints.filter((s) => s.status === 'A').length
-    // const completedSprints = project.sprints.filter((s) => s.status === 'D').length
-    // const totalSprints = project.sprints.length
-
     const [expanded, setExpanded] = useState(false)
   return (
     <motion.div
@@ -68,7 +62,7 @@ const PorjectCard = ({ project, index }: Props) => {
               {project.description}
             </p>
           )}
-          {expanded && <SprintsList projectId={project.id} />}
+          {expanded && <SprintMain projectId={project.id} />}
         </motion.div>
     </motion.div>
   )

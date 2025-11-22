@@ -1,4 +1,5 @@
 import useGetSprints from "@/hooks/api/sprints/useGetSprints"
+import SprintCard from "./SprintCard"
 
 interface Props {
     projectId: number
@@ -11,9 +12,9 @@ const SprintsList = ({ projectId }: Props) => {
     if (error) return <div>Error: {error.message}</div>
 
     return (
-        <div>
-            <>{console.log('sprints', sprints)}</>
-        </div>
+        <>
+        {sprints?.map((sprint, index) => <SprintCard key={sprint.id} sprint={sprint} sprintIndex={index} />)}
+        </>
     )
 }
 
