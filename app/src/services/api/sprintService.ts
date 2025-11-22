@@ -11,6 +11,13 @@ export interface Sprint {
     updated_at: string
 }
 
+export interface CreateSprintRequest {
+    project_id: number
+    name: string
+    description: string
+    deadline: string
+}
+
 interface Props {
     projectId?: number
 }
@@ -22,4 +29,8 @@ export const getSprintService = ({ projectId }: Props) => {
     }
 
     return new APIClient<Sprint[]>(url)
+}
+
+export const createSprintService = () => {
+    return new APIClient<Sprint, CreateSprintRequest>(`/sprints/`)
 }
