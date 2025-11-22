@@ -22,6 +22,10 @@ export const updateProjectService = (projectId: number) => {
     return new APIClient<Project, CreateUpdateProject>(`/projects/${projectId}`)
 }
 
+export const deleteProjectService = (projectId: number) => {
+    return new APIClient<Project, void>(`/projects/${projectId}`)
+}
+
 const getProjectsService = ({ projectId }: Props) => {
     let url = '/projects'
     if (projectId) {

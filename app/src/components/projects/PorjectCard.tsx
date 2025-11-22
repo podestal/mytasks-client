@@ -1,10 +1,11 @@
 import type { Project } from "@/services/api/projectService"
 import { motion } from "framer-motion"
-import { ChevronDown, ChevronUp, FolderKanban, Plus, Edit } from "lucide-react"
+import { ChevronDown, ChevronUp, FolderKanban, Plus, Edit, Trash2 } from "lucide-react"
 import { useState } from "react"
 import SprintMain from "../sprints/SprintMain"
 import CreateSprint from "../sprints/CreateSprint"
 import UpdateProject from "./UpdateProject"
+import DeleteProjectModal from "./DeleteProjectModal"
 
 interface Props {
     project: Project
@@ -15,6 +16,7 @@ const PorjectCard = ({ project, index }: Props) => {
     const [expanded, setExpanded] = useState(false)
     const [isCreateSprintOpen, setIsCreateSprintOpen] = useState(false)
     const [isUpdateProjectOpen, setIsUpdateProjectOpen] = useState(false)
+    const [isDeleteProjectOpen, setIsDeleteProjectOpen] = useState(false)
 
     return (
         <>
@@ -48,7 +50,6 @@ const PorjectCard = ({ project, index }: Props) => {
                             </div>
                         </div>
                         <div className="flex items-center gap-3">
-                            
                             {/* Edit Project Button */}
                             <motion.button
                                 onClick={() => setIsUpdateProjectOpen(true)}
@@ -59,6 +60,17 @@ const PorjectCard = ({ project, index }: Props) => {
                                 title="Edit project"
                             >
                                 <Edit className="w-5 h-5 text-gray-400 hover:text-[#1DB954] transition-colors" />
+                            </motion.button>
+                            {/* Delete Project Button */}
+                            <motion.button
+                                onClick={() => setIsDeleteProjectOpen(true)}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="p-2 hover:bg-red-500/20 rounded-lg transition-colors cursor-pointer"
+                                aria-label="Delete project"
+                                title="Delete project"
+                            >
+                                <Trash2 className="w-5 h-5 text-gray-400 hover:text-red-400 transition-colors" />
                             </motion.button>
                             {/* Create Sprint Button */}
                             <motion.button
@@ -130,6 +142,11 @@ const PorjectCard = ({ project, index }: Props) => {
             <UpdateProject
                 isOpen={isUpdateProjectOpen}
                 onClose={() => setIsUpdateProjectOpen(false)}
+                project={project}
+            />
+            <DeleteProjectModal
+                isOpen={isDeleteProjectOpen}
+                onClose={() => setIsDeleteProjectOpen(false)}
                 project={project}
             />
         </>
