@@ -1,9 +1,10 @@
 import type { Project } from "@/services/api/projectService"
 import { motion } from "framer-motion"
-import { ChevronDown, ChevronUp, FolderKanban, Plus } from "lucide-react"
+import { ChevronDown, ChevronUp, FolderKanban, Plus, Edit } from "lucide-react"
 import { useState } from "react"
 import SprintMain from "../sprints/SprintMain"
 import CreateSprint from "../sprints/CreateSprint"
+import UpdateProject from "./UpdateProject"
 
 interface Props {
     project: Project
@@ -13,6 +14,7 @@ interface Props {
 const PorjectCard = ({ project, index }: Props) => {
     const [expanded, setExpanded] = useState(false)
     const [isCreateSprintOpen, setIsCreateSprintOpen] = useState(false)
+    const [isUpdateProjectOpen, setIsUpdateProjectOpen] = useState(false)
 
     return (
         <>
@@ -45,23 +47,19 @@ const PorjectCard = ({ project, index }: Props) => {
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-6">
-                            {/* Expand/Collapse Button */}
-                            {project.totalSprints > 0 && (
-                                <motion.button
-                                    onClick={() => setExpanded(!expanded)}
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className="p-2 hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
-                                    aria-label={expanded ? 'Hide sprints' : 'Show sprints'}
-                                >
-                                    {expanded ? (
-                                        <ChevronUp className="w-5 h-5 text-[#1DB954]" />
-                                    ) : (
-                                        <ChevronDown className="w-5 h-5 text-gray-400" />
-                                    )}
-                                </motion.button>
-                            )}
+                        <div className="flex items-center gap-3">
+                            
+                            {/* Edit Project Button */}
+                            <motion.button
+                                onClick={() => setIsUpdateProjectOpen(true)}
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.95 }}
+                                className="p-2 hover:bg-gray-800 rounded-lg transition-colors cursor-pointer"
+                                aria-label="Edit project"
+                                title="Edit project"
+                            >
+                                <Edit className="w-5 h-5 text-gray-400 hover:text-[#1DB954] transition-colors" />
+                            </motion.button>
                             {/* Create Sprint Button */}
                             <motion.button
                                 onClick={() => setIsCreateSprintOpen(true)}
@@ -73,7 +71,47 @@ const PorjectCard = ({ project, index }: Props) => {
                             >
                                 <Plus className="w-5 h-5 text-white group-hover:rotate-90 transition-transform" />
                             </motion.button>
-                            
+                            {/* Expand/Collapse Button */}
+                            <motion.button
+                                onClick={() => {
+                                    if (project.totalSprints > 0) {
+                                        setExpanded(!expanded)
+                                    }
+                                }}
+                                whileHover={project.totalSprints > 0 ? { scale: 1.1 } : {}}
+                                whileTap={project.totalSprints > 0 ? { scale: 0.95 } : {}}
+                                disabled={project.totalSprints === 0}
+                                className={`p-2 rounded-lg transition-colors ${
+                                    project.totalSprints > 0
+                                        ? 'hover:bg-gray-800 cursor-pointer'
+                                        : 'cursor-not-allowed opacity-50'
+                                }`}
+                                aria-label={
+                                    project.totalSprints > 0
+                                        ? expanded
+                                            ? 'Hide sprints'
+                                            : 'Show sprints'
+                                        : 'No sprints available'
+                                }
+                            >
+                                {expanded ? (
+                                    <ChevronUp
+                                        className={`w-5 h-5 ${
+                                            project.totalSprints > 0
+                                                ? 'text-[#1DB954]'
+                                                : 'text-gray-500'
+                                        }`}
+                                    />
+                                ) : (
+                                    <ChevronDown
+                                        className={`w-5 h-5 ${
+                                            project.totalSprints > 0
+                                                ? 'text-gray-400'
+                                                : 'text-gray-500'
+                                        }`}
+                                    />
+                                )}
+                            </motion.button>
                         </div>
                     </div>
                     {project.description && (
@@ -88,6 +126,11 @@ const PorjectCard = ({ project, index }: Props) => {
                 isOpen={isCreateSprintOpen}
                 onClose={() => setIsCreateSprintOpen(false)}
                 projectId={project.id}
+            />
+            <UpdateProject
+                isOpen={isUpdateProjectOpen}
+                onClose={() => setIsUpdateProjectOpen(false)}
+                project={project}
             />
         </>
     )

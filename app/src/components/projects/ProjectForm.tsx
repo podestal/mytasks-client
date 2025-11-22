@@ -1,7 +1,8 @@
-import { Loader2, Plus } from "lucide-react"
+import { Loader2, Plus, Edit } from "lucide-react"
 import { motion } from "framer-motion"
 import Modal from "../ui/Modal"
 import type { createProjectData } from "@/hooks/api/projects/useCreateProject"
+import type { updateProjectData } from "@/hooks/api/projects/useUpdateProject"
 import type { Project } from "@/services/api/projectService"
 import type { UseMutationResult } from "@tanstack/react-query"
 import { useState, useEffect } from "react"
@@ -10,41 +11,62 @@ interface Props {
     isOpen: boolean
     onClose: () => void
     createProject?: UseMutationResult<Project, Error, createProjectData>
+    updateProject?: UseMutationResult<Project, Error, updateProjectData>
+    project?: Project | null
 }
 
-const ProjectForm = ({ isOpen, onClose, createProject }: Props) => {
+const ProjectForm = ({ isOpen, onClose, createProject, updateProject, project }: Props) => {
     const [name, setName] = useState('')
     const [description, setDescription] = useState('')
+    const isEditMode = !!project
 
-    // Reset form when modal closes
+    // Populate form when editing
     useEffect(() => {
-        if (!isOpen) {
+        if (isOpen && project) {
+            setName(project.name)
+            setDescription(project.description || '')
+        } else if (!isOpen) {
             setName('')
             setDescription('')
         }
-    }, [isOpen])
+    }, [isOpen, project])
 
-    const isLoading = createProject?.isPending || false
-    const isError = createProject?.isError || false
-    const error = createProject?.error
+    const isLoading = createProject?.isPending || updateProject?.isPending || false
+    const isError = createProject?.isError || updateProject?.isError || false
+    const error = createProject?.error || updateProject?.error
 
     const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
         if (!name.trim()) return
 
-        createProject?.mutate({
-            access: '',
-            project: {
-                name: name.trim(),
-                description: description.trim(),
-            }
-        }, {
-            onSuccess: () => {
-                setName('')
-                setDescription('')
-                onClose()
-            }
-        })
+        if (isEditMode && updateProject && project) {
+            updateProject.mutate({
+                access: '',
+                projectId: project.id,
+                project: {
+                    name: name.trim(),
+                    description: description.trim(),
+                }
+            }, {
+                onSuccess: () => {
+                    onClose()
+                }
+            })
+        } else if (createProject) {
+            createProject.mutate({
+                access: '',
+                project: {
+                    name: name.trim(),
+                    description: description.trim(),
+                }
+            }, {
+                onSuccess: () => {
+                    setName('')
+                    setDescription('')
+                    onClose()
+                }
+            })
+        }
     }
 
     const handleClose = () => {
@@ -57,8 +79,8 @@ const ProjectForm = ({ isOpen, onClose, createProject }: Props) => {
         <Modal 
             isOpen={isOpen} 
             onClose={handleClose} 
-            title="Create Project" 
-            icon={<Plus className="w-5 h-5 text-white" />}
+            title={isEditMode ? "Edit Project" : "Create Project"} 
+            icon={isEditMode ? <Edit className="w-5 h-5 text-white" /> : <Plus className="w-5 h-5 text-white" />}
             disabled={isLoading}
             closeOnBackdropClick={!isLoading}
         >
@@ -137,12 +159,12 @@ const ProjectForm = ({ isOpen, onClose, createProject }: Props) => {
                         {isLoading ? (
                             <>
                                 <Loader2 className="w-4 h-4 animate-spin" />
-                                Creating...
+                                {isEditMode ? 'Updating...' : 'Creating...'}
                             </>
                         ) : (
                             <>
-                                <Plus className="w-4 h-4" />
-                                Create Project
+                                {isEditMode ? <Edit className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                                {isEditMode ? 'Update Project' : 'Create Project'}
                             </>
                         )}
                     </motion.button>

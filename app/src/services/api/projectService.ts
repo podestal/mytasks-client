@@ -18,6 +18,10 @@ interface Props {
 
 export const createProjectService = new APIClient<Project, CreateUpdateProject>('/projects')
 
+export const updateProjectService = (projectId: number) => {
+    return new APIClient<Project, CreateUpdateProject>(`/projects/${projectId}`)
+}
+
 const getProjectsService = ({ projectId }: Props) => {
     let url = '/projects'
     if (projectId) {
