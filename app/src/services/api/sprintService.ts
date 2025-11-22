@@ -32,5 +32,5 @@ export const getSprintService = ({ projectId }: Props) => {
 }
 
 export const createSprintService = () => {
-    return new APIClient<Sprint, CreateSprintRequest>(`/sprints/`)
+    return new APIClient<Sprint, CreateSprintRequest>(`/sprints`)
 }

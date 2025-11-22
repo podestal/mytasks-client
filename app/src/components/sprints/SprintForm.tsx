@@ -46,6 +46,9 @@ const SprintForm = ({ isOpen, onClose, projectId, createSprint }: Props) => {
         e.preventDefault()
         if (!name.trim() || !deadline) return
 
+        console.log('deadline', deadline);
+        
+
         createSprint?.mutate({
             access: '',
             sprint: {
