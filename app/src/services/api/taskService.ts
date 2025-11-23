@@ -1,4 +1,4 @@
-import type APIClient from "./apiClient"
+import APIClient from "./apiClient"
 
 export interface Task {
     id: number
