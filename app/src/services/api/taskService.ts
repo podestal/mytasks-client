@@ -10,10 +10,21 @@ export interface Task {
     updated_at: string
 }
 
+export interface CreateTaskRequest {
+    sprint_id: number
+    description: string
+    priority: string
+    status: string
+}
+
 interface Props {
     sprintId: number
 }
 
 export const getTasksBySprintIdService = ({ sprintId }: Props) => {
     return new APIClient<Task[]>(`/tasks/by-sprint/${sprintId}`)
+}
+
+export const createTaskService = () => {
+    return new APIClient<Task, CreateTaskRequest>('/tasks')
 }

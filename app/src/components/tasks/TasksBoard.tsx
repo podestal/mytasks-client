@@ -1,14 +1,16 @@
 import type { Task } from "@/services/api/taskService"
 import { AnimatePresence, motion } from "framer-motion"
 import { Trash2, User } from "lucide-react"
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo, useState, useEffect } from "react"
+import CreateTask from "./CreateTask"
 
 interface Props {
     initialTasks: Task[]
+    sprintId: number
 }
 
 // Task status types
-type TaskStatus = 'todo' | 'in_progress' | 'in_review' | 'done'
+type TaskStatus = 'T' | 'P' | 'R' | 'D'
 
 const columns = [
     { id: 'T', label: 'Todo', color: 'bg-gray-500/20 border-gray-500/30' },
@@ -18,11 +20,16 @@ const columns = [
     { id: 'delete', label: 'Delete', color: 'bg-red-500/20 border-red-500/30' },
   ]
 
-const TasksBoard = ({ initialTasks }: Props) => {
+const TasksBoard = ({ initialTasks, sprintId }: Props) => {
     console.log('from tasks board', initialTasks)
     const [draggedTask, setDraggedTask] = useState<Task | null>(null)
     const [draggedOverColumn, setDraggedOverColumn] = useState<string | null>(null)
     const [tasks, setTasks] = useState<Task[]>(initialTasks)
+
+    // Sync tasks when initialTasks changes (e.g., after creating a new task)
+    useEffect(() => {
+        setTasks(initialTasks)
+    }, [initialTasks])
 
     // Memoize tasks by status to prevent unnecessary recalculations
     const tasksByStatus = useMemo(() => {
@@ -145,7 +152,12 @@ const TasksBoard = ({ initialTasks }: Props) => {
                       </div>
                     </div>
                   ) : (
-                    getTasksByStatus(column.id).map((task) => (
+                    <>
+                      {/* Create Task Form - Only show in Todo column */}
+                      {column.id === 'T' && (
+                        <CreateTask sprintId={sprintId} />
+                      )}
+                      {getTasksByStatus(column.id).map((task) => (
                       <motion.div
                         key={task.id}
                         initial={{ opacity: 0, scale: 0.9 }}
@@ -219,7 +231,8 @@ const TasksBoard = ({ initialTasks }: Props) => {
                             </div>
                         </div>
                       </motion.div>
-                    ))
+                      ))}
+                    </>
                   )}
                 </AnimatePresence>
               </div>

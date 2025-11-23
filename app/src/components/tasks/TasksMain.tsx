@@ -14,7 +14,7 @@ const TasksMain = ({ sprintId }: Props) => {
     if (isSuccess)
 
     return (
-        <TasksBoard initialTasks={tasks} />
+        <TasksBoard initialTasks={tasks} sprintId={sprintId} />
     )
 }
 
