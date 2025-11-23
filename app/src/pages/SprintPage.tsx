@@ -1,15 +1,14 @@
-import { useParams, Link } from '@tanstack/react-router'
+import { useParams, Link, useLocation } from '@tanstack/react-router'
 import { useState, useEffect, useMemo, useCallback } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { 
   ArrowLeft, 
   Calendar, 
   CheckCircle2, 
-  Clock, 
-  Trash2,
-  User
+  Clock
 } from 'lucide-react'
 import axios from 'axios'
+import type { Sprint } from '@/services/api/sprintService'
 
 // Task status types
 type TaskStatus = 'todo' | 'in_progress' | 'in_review' | 'done'
@@ -25,17 +24,6 @@ interface Task {
   updated_at: string
 }
 
-// Mock sprint data
-const mockSprint = {
-  id: 1,
-  project_id: 1,
-  name: 'Sprint 1: User Authentication',
-  description: 'Implement user registration, login, and password reset',
-  deadline: '2024-02-15',
-  status: 'A',
-  created_at: '2024-01-15T10:00:00Z',
-  updated_at: '2024-02-10T16:00:00Z',
-}
 
 // Mock tasks data
 const mockTasks: Task[] = [
@@ -123,18 +111,32 @@ const formatDate = (dateString: string) => {
 
 const SprintPage = () => {
   const { sprintId } = useParams({ from: '/sprints/$sprintId' })
+  const location = useLocation()
+  const [sprint, setSprint] = useState<Sprint | null>(
+    (location.state as { sprint?: Sprint })?.sprint || null
+  )
   const [tasks, setTasks] = useState<Task[]>(mockTasks)
   const [draggedTask, setDraggedTask] = useState<Task | null>(null)
   const [draggedOverColumn, setDraggedOverColumn] = useState<string | null>(null)
+  const [isLoadingSprint, setIsLoadingSprint] = useState(!sprint)
+  const url = import.meta.env.VITE_API_URL
 
   useEffect(() => {
-    // Fetch sprint and tasks data
-    axios.get(`http://localhost:3000/api/sprints/${sprintId}`).then((response) => {
-      console.log(response.data)
-    }).catch((error) => {
-      console.error(error)
-    })
-  }, [sprintId])
+    // If sprint wasn't passed via state, fetch it from the server
+    if (!sprint && sprintId) {
+      setIsLoadingSprint(true)
+      axios.get(`${url}sprints/${sprintId}`)
+        .then((response) => {
+          console.log(response)
+          setSprint(response.data[0])
+          setIsLoadingSprint(false)
+        })
+        .catch((error) => {
+          console.error('Error fetching sprint:', error)
+          setIsLoadingSprint(false)
+        })
+    }
+  }, [sprintId, sprint])
 
   // Memoize tasks by status to prevent unnecessary recalculations
   const tasksByStatus = useMemo(() => {
@@ -197,10 +199,12 @@ const SprintPage = () => {
     return tasksByStatus[status] || []
   }, [tasksByStatus])
 
-  const daysUntilDeadline = Math.ceil(
-    (new Date(mockSprint.deadline).getTime() - new Date().getTime()) /
-      (1000 * 60 * 60 * 24)
-  )
+  const daysUntilDeadline = sprint
+    ? Math.ceil(
+        (new Date(sprint.deadline).getTime() - new Date().getTime()) /
+          (1000 * 60 * 60 * 24)
+      )
+    : 0
 
   return (
     <div className="min-h-screen bg-[#121212] p-4 md:p-8">
@@ -221,190 +225,72 @@ const SprintPage = () => {
         </motion.div>
 
         {/* Sprint Summary Header */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-[#1a1a1a] border-l-4 border-[#1DB954] rounded-2xl p-6 mb-8 shadow-lg"
-        >
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                {mockSprint.name}
-              </h1>
-              {mockSprint.description && (
-                <p className="text-gray-300 text-sm md:text-base mb-4">
-                  {mockSprint.description}
-                </p>
-              )}
+        {isLoadingSprint ? (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-[#1a1a1a] border-l-4 border-[#1DB954] rounded-2xl p-6 mb-8 shadow-lg"
+          >
+            <div className="animate-pulse">
+              <div className="h-8 bg-gray-700 rounded w-3/4 mb-4"></div>
+              <div className="h-4 bg-gray-700 rounded w-1/2 mb-6"></div>
+              <div className="h-4 bg-gray-700 rounded w-1/4"></div>
             </div>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4 text-sm">
-            <div className="flex items-center gap-2 text-gray-400">
-              <Calendar className="w-4 h-4" />
-              <span>Due: {formatDate(mockSprint.deadline)}</span>
-              <span
-                className={`ml-2 px-2 py-1 rounded text-xs ${
-                  daysUntilDeadline < 7
-                    ? 'bg-red-500/20 text-red-400'
-                    : daysUntilDeadline < 14
-                      ? 'bg-yellow-500/20 text-yellow-400'
-                      : 'bg-[#1DB954]/20 text-[#1DB954]'
-                }`}
-              >
-                {daysUntilDeadline > 0
-                  ? `${daysUntilDeadline} day${daysUntilDeadline !== 1 ? 's' : ''} left`
-                  : 'Overdue'}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-400">
-              <CheckCircle2 className="w-4 h-4" />
-              <span>{tasks.filter((t) => t.status === 'done').length} of {tasks.length} tasks completed</span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-400">
-              <Clock className="w-4 h-4" />
-              <span>Updated {formatDate(mockSprint.updated_at)}</span>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Kanban Board */}
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          {columns.map((column) => (
-            <motion.div
-              key={column.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ 
-                opacity: 1, 
-                y: 0,
-              }}
-              transition={{ duration: 0.2 }}
-              className={`flex flex-col ${
-                column.id === 'delete' 
-                  ? 'w-full aspect-square max-w-[200px] mx-auto md:mx-0' 
-                  : 'h-full min-h-[500px]'
-              } ${draggedOverColumn === column.id ? 'ring-2 ring-[#1DB954] ring-offset-2 ring-offset-[#121212]' : ''}`}
-              style={{
-                willChange: draggedOverColumn === column.id ? 'transform' : 'auto',
-              }}
-              onDragOver={(e) => handleDragOver(e, column.id)}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDragEnd}
-            >
-              {/* Column Header */}
-              <div className={`flex items-center justify-between mb-4 rounded-xl border-2 ${column.color} p-3 ${
-                draggedOverColumn === column.id && column.id === 'delete' ? 'ring-2 ring-red-500 ring-offset-2 ring-offset-[#121212]' : ''
-              }`}>
-                <h2 className="font-semibold text-white text-sm uppercase tracking-wide">
-                  {column.label}
-                </h2>
-                <span className="text-xs text-gray-400 bg-black/30 px-2 py-1 rounded">
-                  {column.id === 'delete' ? 0 : getTasksByStatus(column.id).length}
-                </span>
+          </motion.div>
+        ) : sprint ? (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-[#1a1a1a] border-l-4 border-[#1DB954] rounded-2xl p-6 mb-8 shadow-lg"
+          >
+            <div className="flex items-start justify-between mb-4">
+              <div className="flex-1">
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
+                  {sprint.name}
+                </h1>
+                {sprint.description && (
+                  <p className="text-gray-300 text-sm md:text-base mb-4">
+                    {sprint.description}
+                  </p>
+                )}
               </div>
+            </div>
 
-              {/* Tasks in this column */}
-              <div className={column.id === 'delete' ? 'flex-1' : 'flex-1 space-y-3'}>
-                <AnimatePresence>
-                  {column.id === 'delete' ? (
-                    <div className={`flex items-center justify-center h-full rounded-xl border-2 ${column.color} ${
-                      draggedOverColumn === column.id ? 'ring-2 ring-red-500' : ''
-                    }`}>
-                      <div className="text-center p-4">
-                        <Trash2 className="w-12 h-12 text-red-400/50 mx-auto mb-2" />
-                        <p className="text-xs text-gray-500">Drop tasks here to delete</p>
-                      </div>
-                    </div>
-                  ) : (
-                    getTasksByStatus(column.id).map((task) => (
-                      <motion.div
-                        key={task.id}
-                        initial={{ opacity: 0, scale: 0.9 }}
-                        animate={{ opacity: draggedTask?.id === task.id ? 0.5 : 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.9, x: -100 }}
-                        transition={{ duration: 0.15 }}
-                        draggable
-                        {...({
-                          onDragStart: (e: React.DragEvent<HTMLDivElement>) => {
-                            handleDragStart(task)
-                            e.dataTransfer.effectAllowed = 'move'
-                            e.dataTransfer.setData('text/html', task.id.toString())
-                            
-                            // Create a translucent drag preview
-                            const dragElement = e.currentTarget.cloneNode(true) as HTMLElement
-                            dragElement.style.opacity = '0.6'
-                            dragElement.style.transform = 'rotate(3deg)'
-                            dragElement.style.pointerEvents = 'none'
-                            dragElement.style.position = 'absolute'
-                            dragElement.style.top = '-1000px'
-                            dragElement.style.width = e.currentTarget.offsetWidth + 'px'
-                            dragElement.style.zIndex = '9999'
-                            
-                            document.body.appendChild(dragElement)
-                            
-                            // Calculate offset to center the drag image on cursor
-                            const rect = e.currentTarget.getBoundingClientRect()
-                            const offsetX = e.clientX - rect.left
-                            const offsetY = e.clientY - rect.top
-                            
-                            e.dataTransfer.setDragImage(dragElement, offsetX, offsetY)
-                            
-                            // Clean up after a short delay
-                            setTimeout(() => {
-                              if (document.body.contains(dragElement)) {
-                                document.body.removeChild(dragElement)
-                              }
-                            }, 0)
-                          }
-                        } as any)}
-                        className={`bg-black rounded-lg p-3 border border-gray-700 hover:border-[#1DB954]/50 cursor-grab shadow-lg transition-opacity duration-150 ${
-                          draggedTask?.id === task.id ? 'opacity-50' : ''
-                        }`}
-                        style={{
-                          willChange: 'opacity',
-                          touchAction: 'none',
-                        }}
-                        onDragEnd={(e) => {
-                          (e.currentTarget as HTMLElement).style.cursor = 'grab'
-                        }}
-                      >
-                        <div className="mb-2">
-                          <h3 className="font-semibold text-white text-sm mb-1">
-                            {task.title}
-                          </h3>
-                          {task.description && (
-                            <p className="text-xs text-gray-400 line-clamp-2">
-                              {task.description}
-                            </p>
-                          )}
-                        </div>
-
-                        <div className="flex flex-wrap items-center gap-2 mt-3">
-                          {task.priority && (
-                            <span
-                              className={`text-xs px-2 py-0.5 rounded border ${getPriorityColor(
-                                task.priority
-                              )}`}
-                            >
-                              {task.priority}
-                            </span>
-                          )}
-                          {task.assignee && (
-                            <div className="flex items-center gap-1 text-xs text-gray-400">
-                              <User className="w-3 h-3" />
-                              <span className="truncate max-w-[80px]">{task.assignee}</span>
-                            </div>
-                          )}
-                        </div>
-                      </motion.div>
-                    ))
-                  )}
-                </AnimatePresence>
+            <div className="flex flex-wrap items-center gap-4 text-sm">
+              <div className="flex items-center gap-2 text-gray-400">
+                <Calendar className="w-4 h-4" />
+                <span>Due: {formatDate(sprint.deadline)}</span>
+                {sprint.status === 'A' && (
+                  <span
+                    className={`ml-2 px-2 py-1 rounded text-xs ${
+                      daysUntilDeadline < 7
+                        ? 'bg-red-500/20 text-red-400'
+                        : daysUntilDeadline < 14
+                          ? 'bg-yellow-500/20 text-yellow-400'
+                          : 'bg-[#1DB954]/20 text-[#1DB954]'
+                    }`}
+                  >
+                    {daysUntilDeadline > 0
+                      ? `${daysUntilDeadline} day${daysUntilDeadline !== 1 ? 's' : ''} left`
+                      : 'Overdue'}
+                  </span>
+                )}
               </div>
-            </motion.div>
-          ))}
-        </div>
+              <div className="flex items-center gap-2 text-gray-400">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>{tasks.filter((t) => t.status === 'done').length} of {tasks.length} tasks completed</span>
+              </div>
+              <div className="flex items-center gap-2 text-gray-400">
+                <Clock className="w-4 h-4" />
+                <span>Updated {formatDate(sprint.updated_at)}</span>
+              </div>
+            </div>
+          </motion.div>
+        ) : null}
+
+
       </div>
     </div>
   )

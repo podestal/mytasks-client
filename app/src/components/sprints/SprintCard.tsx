@@ -1,6 +1,6 @@
 import { motion } from "framer-motion"
 import type { Sprint } from "@/services/api/sprintService"
-import { Link } from "@tanstack/react-router"
+import { useNavigate } from "@tanstack/react-router"
 import { Calendar, CheckCircle } from "lucide-react"
 
 interface Props {
@@ -9,11 +9,19 @@ interface Props {
 }
 
 const SprintCard = ({ sprint, sprintIndex }: Props) => {
+  const navigate = useNavigate()
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    navigate({
+      to: '/sprints/$sprintId',
+      params: { sprintId: sprint.id.toString() },
+      state: { sprint } as any,
+    })
+  }
+
   return (
-    <Link
-        to="/sprints/$sprintId"
-        params={{ sprintId: sprint.id.toString() }}
-    >
+    <div onClick={handleClick} className="cursor-pointer">
         <motion.div
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
@@ -64,7 +72,7 @@ const SprintCard = ({ sprint, sprintIndex }: Props) => {
                 </div>
             </div>
         </motion.div>
-  </Link>
+    </div>
   )
 }
 
