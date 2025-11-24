@@ -5,12 +5,11 @@ import useDeleteTask from "@/hooks/api/tasks/useDeleteTask"
 import useUpdateTask from "@/hooks/api/tasks/useUpdateTask"
 
 interface UseDragAndDropProps {
-  tasks: Task[]
   sprintId: number
   onTasksChange: (updater: (prev: Task[]) => Task[]) => void
 }
 
-export const useDragAndDrop = ({ tasks, sprintId, onTasksChange }: UseDragAndDropProps) => {
+export const useDragAndDrop = ({ sprintId, onTasksChange }: UseDragAndDropProps) => {
   const [draggedTask, setDraggedTask] = useState<Task | null>(null)
   const [draggedOverColumn, setDraggedOverColumn] = useState<string | null>(null)
   const deleteTask = useDeleteTask()

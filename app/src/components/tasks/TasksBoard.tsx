@@ -46,7 +46,6 @@ const TasksBoard = ({ initialTasks, sprintId }: Props) => {
     handleDragOver,
     handleDragLeave,
   } = useDragAndDrop({
-    tasks,
     sprintId,
     onTasksChange: handleTasksChange,
   })

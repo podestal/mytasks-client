@@ -1,6 +1,6 @@
 import type { Task } from "@/services/api/taskService"
 import { AnimatePresence, motion } from "framer-motion"
-import type { Column, TaskStatus } from "./constants"
+import type { Column } from "./constants"
 import CreateTask from "./CreateTask"
 import TaskCard from "./TaskCard"
 

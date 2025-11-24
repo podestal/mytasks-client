@@ -17,7 +17,7 @@ const TaskCard = ({ task, isDragging, onDragStart }: TaskCardProps) => {
       exit={{ opacity: 0, scale: 0.9, x: -100 }}
       transition={{ duration: 0.15 }}
       draggable
-      onDragStart={(e) => onDragStart(task, e)}
+      onDragStart={(e) => onDragStart(task, e as unknown as React.DragEvent<HTMLDivElement>)}
       className={`bg-black rounded-lg p-3 border border-gray-700 hover:border-[#1DB954]/50 cursor-grab shadow-lg transition-opacity duration-150 ${
         isDragging ? 'opacity-50' : ''
       }`}
