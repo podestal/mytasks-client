@@ -4,6 +4,7 @@ import { Trash2, User } from "lucide-react"
 import { useCallback, useMemo, useState, useEffect } from "react"
 import CreateTask from "./CreateTask"
 import useDeleteTask from "@/hooks/api/tasks/useDeleteTask"
+import useUpdateTask from "@/hooks/api/tasks/useUpdateTask"
 
 interface Props {
     initialTasks: Task[]
@@ -27,6 +28,7 @@ const TasksBoard = ({ initialTasks, sprintId }: Props) => {
     const [draggedOverColumn, setDraggedOverColumn] = useState<string | null>(null)
     const [tasks, setTasks] = useState<Task[]>(initialTasks)
     const deleteTask = useDeleteTask()
+    const updateTask = useUpdateTask()
 
     // Sync tasks when initialTasks changes (e.g., after creating a new task)
     useEffect(() => {
@@ -86,19 +88,42 @@ const TasksBoard = ({ initialTasks, sprintId }: Props) => {
               }
             })
           } else if (draggedOverColumn !== draggedTask.status) {
-            // Update task status only if it changed
+            // Update task status via API
+            const newStatus = draggedOverColumn as TaskStatus
+            // Optimistically update local state
             setTasks((prevTasks) =>
               prevTasks.map((t) =>
                 t.id === draggedTask.id
-                  ? { ...t, status: draggedOverColumn as TaskStatus, updated_at: new Date().toISOString() }
+                  ? { ...t, status: newStatus, updated_at: new Date().toISOString() }
                   : t
               )
             )
+            // Call API to update task status
+            updateTask.mutate({
+              access: '',
+              taskId: draggedTask.id,
+              sprintId: sprintId,
+              task: {
+                status: newStatus,
+              }
+            }, {
+              onError: (error) => {
+                console.error('Failed to update task:', error)
+                // Revert optimistic update on error
+                setTasks((prevTasks) =>
+                  prevTasks.map((t) =>
+                    t.id === draggedTask.id
+                      ? { ...t, status: draggedTask.status, updated_at: draggedTask.updated_at }
+                      : t
+                  )
+                )
+              }
+            })
           }
         }
         setDraggedTask(null)
         setDraggedOverColumn(null)
-      }, [draggedTask, draggedOverColumn, deleteTask, sprintId])
+      }, [draggedTask, draggedOverColumn, deleteTask, updateTask, sprintId])
     
       const handleDragOver = useCallback((e: React.DragEvent, columnId: string) => {
         e.preventDefault()

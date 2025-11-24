@@ -17,6 +17,12 @@ export interface CreateTaskRequest {
     status: string
 }
 
+export interface UpdateTaskRequest {
+    status?: string
+    priority?: string
+    description?: string
+}
+
 interface Props {
     sprintId: number
 }
@@ -31,4 +37,8 @@ export const createTaskService = () => {
 
 export const deleteTaskService = (taskId: number) => {
     return new APIClient<Task, void>(`/tasks/${taskId}`)
+}
+
+export const updateTaskService = (taskId: number) => {
+    return new APIClient<Task, UpdateTaskRequest>(`/tasks/${taskId}`)
 }
