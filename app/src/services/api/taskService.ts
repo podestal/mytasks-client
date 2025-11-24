@@ -28,3 +28,7 @@ export const getTasksBySprintIdService = ({ sprintId }: Props) => {
 export const createTaskService = () => {
     return new APIClient<Task, CreateTaskRequest>('/tasks')
 }
+
+export const deleteTaskService = (taskId: number) => {
+    return new APIClient<Task, void>(`/tasks/${taskId}`)
+}

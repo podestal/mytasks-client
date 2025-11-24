@@ -3,6 +3,7 @@ import { AnimatePresence, motion } from "framer-motion"
 import { Trash2, User } from "lucide-react"
 import { useCallback, useMemo, useState, useEffect } from "react"
 import CreateTask from "./CreateTask"
+import useDeleteTask from "@/hooks/api/tasks/useDeleteTask"
 
 interface Props {
     initialTasks: Task[]
@@ -25,6 +26,7 @@ const TasksBoard = ({ initialTasks, sprintId }: Props) => {
     const [draggedTask, setDraggedTask] = useState<Task | null>(null)
     const [draggedOverColumn, setDraggedOverColumn] = useState<string | null>(null)
     const [tasks, setTasks] = useState<Task[]>(initialTasks)
+    const deleteTask = useDeleteTask()
 
     // Sync tasks when initialTasks changes (e.g., after creating a new task)
     useEffect(() => {
@@ -49,11 +51,11 @@ const TasksBoard = ({ initialTasks, sprintId }: Props) => {
 
     const getPriorityColor = (priority?: string) => {
         switch (priority) {
-          case 'high':
+          case 'H':
             return 'bg-red-500/20 text-red-400 border-red-500/30'
-          case 'medium':
+          case 'M':
             return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
-          case 'low':
+          case 'L':
             return 'bg-blue-500/20 text-blue-400 border-blue-500/30'
           default:
             return 'bg-gray-500/20 text-gray-400 border-gray-500/30'
@@ -68,8 +70,21 @@ const TasksBoard = ({ initialTasks, sprintId }: Props) => {
         e.preventDefault()
         if (draggedTask && draggedOverColumn) {
           if (draggedOverColumn === 'delete') {
-            // Delete task
-            setTasks((prevTasks) => prevTasks.filter((t) => t.id !== draggedTask.id))
+            // Delete task via API
+            deleteTask.mutate({
+              access: '',
+              taskId: draggedTask.id,
+              sprintId: sprintId,
+            }, {
+              onSuccess: () => {
+                // Optimistically update local state
+                setTasks((prevTasks) => prevTasks.filter((t) => t.id !== draggedTask.id))
+              },
+              onError: (error) => {
+                console.error('Failed to delete task:', error)
+                // Optionally show error message to user
+              }
+            })
           } else if (draggedOverColumn !== draggedTask.status) {
             // Update task status only if it changed
             setTasks((prevTasks) =>
@@ -83,7 +98,7 @@ const TasksBoard = ({ initialTasks, sprintId }: Props) => {
         }
         setDraggedTask(null)
         setDraggedOverColumn(null)
-      }, [draggedTask, draggedOverColumn])
+      }, [draggedTask, draggedOverColumn, deleteTask, sprintId])
     
       const handleDragOver = useCallback((e: React.DragEvent, columnId: string) => {
         e.preventDefault()
@@ -222,7 +237,7 @@ const TasksBoard = ({ initialTasks, sprintId }: Props) => {
                                 task.priority
                               )}`}
                             >
-                              {task.priority}
+                              {task.priority === 'H' ? 'High' : task.priority === 'M' ? 'Medium' : 'Low'}
                             </span>
                           )}
                           <div className="flex items-center gap-1 text-xs text-gray-400">
