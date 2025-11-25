@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, CheckCircle2, Clock, Edit2, Save, X } from 'lucide-react'
+import { Calendar, CheckCircle2, Clock, Edit2, Save, X, CheckCircle } from 'lucide-react'
+import { useNavigate } from '@tanstack/react-router'
 import type { Sprint } from '@/services/api/sprintService'
 import useUpdateSprint from '@/hooks/api/sprints/useUpdateSprint'
 
@@ -25,6 +26,7 @@ const SprintHeader = ({ sprint }: SprintHeaderProps) => {
     sprint.deadline
   )
   const updateSprint = useUpdateSprint()
+  const navigate = useNavigate()
 
   const daysUntilDeadline = Math.ceil(
     (new Date(sprint.deadline).getTime() - new Date().getTime()) /
@@ -57,12 +59,31 @@ const SprintHeader = ({ sprint }: SprintHeaderProps) => {
     setIsEditing(false)
   }
 
+  const handleComplete = () => {
+    updateSprint.mutate(
+      {
+        access: '',
+        sprintId: sprint.id,
+        sprint: {
+          status: 'D',
+        },
+      },
+      {
+        onSuccess: () => {
+          navigate({ to: '/projects' })
+        },
+      }
+    )
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
-      className="bg-[#1a1a1a] border-l-4 border-[#1DB954] rounded-2xl p-6 mb-8 shadow-lg"
+      className={`bg-[#1a1a1a] border-l-4 ${
+        sprint.status === 'D' ? 'border-gray-500' : 'border-[#1DB954]'
+      } rounded-2xl p-6 mb-8 shadow-lg`}
     >
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
@@ -114,22 +135,46 @@ const SprintHeader = ({ sprint }: SprintHeaderProps) => {
             <>
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                    {sprint.name}
-                  </h1>
+                  <div className="flex items-center gap-3 mb-2">
+                    <h1 className="text-3xl md:text-4xl font-bold text-white">
+                      {sprint.name}
+                    </h1>
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-medium border ${
+                        sprint.status === 'A'
+                          ? 'bg-[#1DB954]/20 text-[#1DB954] border-[#1DB954]/30'
+                          : 'bg-gray-500/20 text-gray-400 border-gray-500/30'
+                      }`}
+                    >
+                      {sprint.status === 'A' ? 'Active' : 'Completed'}
+                    </span>
+                  </div>
                   {sprint.description && (
                     <p className="text-gray-300 text-sm md:text-base mb-4">
                       {sprint.description}
                     </p>
                   )}
                 </div>
-                <button
-                  onClick={() => setIsEditing(true)}
-                  className="ml-4 p-2 text-gray-400 hover:text-[#1DB954] hover:bg-[#1DB954]/10 rounded-lg transition-colors"
-                  title="Edit sprint"
-                >
-                  <Edit2 className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2 ml-4">
+                  {sprint.status === 'A' && (
+                    <button
+                      onClick={handleComplete}
+                      disabled={updateSprint.isPending}
+                      className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-[#1DB954] text-white rounded-lg hover:bg-[#1DB954]/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      title="Mark sprint as complete"
+                    >
+                      <CheckCircle className="w-4 h-4" />
+                      {updateSprint.isPending ? 'Completing...' : 'Complete'}
+                    </button>
+                  )}
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="p-2 text-gray-400 hover:text-[#1DB954] hover:bg-[#1DB954]/10 rounded-lg transition-colors"
+                    title="Edit sprint"
+                  >
+                    <Edit2 className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </>
           )}
@@ -138,10 +183,10 @@ const SprintHeader = ({ sprint }: SprintHeaderProps) => {
 
       {!isEditing && (
         <div className="flex flex-wrap items-center gap-4 text-sm">
-          <div className="flex items-center gap-2 text-gray-400">
-            <Calendar className="w-4 h-4" />
-            <span>Due: {formatDate(sprint.deadline)}</span>
-            {sprint.status === 'A' && (
+          {sprint.status === 'A' && (
+            <div className="flex items-center gap-2 text-gray-400">
+              <Calendar className="w-4 h-4" />
+              <span>Due: {formatDate(sprint.deadline)}</span>
               <span
                 className={`ml-2 px-2 py-1 rounded text-xs ${
                   daysUntilDeadline < 7
@@ -155,12 +200,14 @@ const SprintHeader = ({ sprint }: SprintHeaderProps) => {
                   ? `${daysUntilDeadline} day${daysUntilDeadline !== 1 ? 's' : ''} left`
                   : 'Overdue'}
               </span>
-            )}
-          </div>
-          <div className="flex items-center gap-2 text-gray-400">
-            <CheckCircle2 className="w-4 h-4" />
-            {/* <span>{sprint.tasks.filter((t: Task) => t.status === 'done').length} of {sprint.tasks.length} tasks completed</span> */}
-          </div>
+            </div>
+          )}
+          {sprint.status === 'D' && (
+            <div className="flex items-center gap-2 text-gray-400">
+              <CheckCircle2 className="w-4 h-4 text-[#1DB954]" />
+              <span className="text-[#1DB954]">Completed</span>
+            </div>
+          )}
           <div className="flex items-center gap-2 text-gray-400">
             <Clock className="w-4 h-4" />
             <span>Updated {formatDate(sprint.updated_at)}</span>
