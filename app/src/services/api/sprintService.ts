@@ -18,6 +18,13 @@ export interface CreateSprintRequest {
     deadline: string
 }
 
+export interface UpdateSprintRequest {
+    name?: string
+    description?: string
+    deadline?: string
+    status?: string
+}
+
 interface Props {
     projectId?: number
 }
@@ -31,6 +38,14 @@ export const getSprintService = ({ projectId }: Props) => {
     return new APIClient<Sprint[]>(url)
 }
 
+export const getSprintByIdService = (sprintId: number) => {
+    return new APIClient<Sprint>(`/sprints/${sprintId}`)
+}
+
 export const createSprintService = () => {
     return new APIClient<Sprint, CreateSprintRequest>(`/sprints`)
+}
+
+export const updateSprintService = (sprintId: number) => {
+    return new APIClient<Sprint, UpdateSprintRequest>(`/sprints/${sprintId}`)
 }

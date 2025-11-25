@@ -1,58 +1,26 @@
 import { useParams, Link, useLocation } from '@tanstack/react-router'
-import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { 
-  ArrowLeft, 
-  Calendar, 
-  CheckCircle2, 
-  Clock
-} from 'lucide-react'
-import axios from 'axios'
+import { ArrowLeft } from 'lucide-react'
 import type { Sprint } from '@/services/api/sprintService'
 import TasksMain from '@/components/tasks/TasksMain'
-
-
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
-}
+import SprintHeader from '@/components/sprints/SprintHeader'
+import useGetSprintById from '@/hooks/api/sprints/useGetSprintById'
 
 const SprintPage = () => {
   const { sprintId } = useParams({ from: '/sprints/$sprintId' })
   const location = useLocation()
-  const [sprint, setSprint] = useState<Sprint | null>(
-    (location.state as { sprint?: Sprint })?.sprint || null
-  )
-  const [isLoadingSprint, setIsLoadingSprint] = useState(!sprint)
-  const url = import.meta.env.VITE_API_URL
+  const sprintFromState = (location.state as { sprint?: Sprint })?.sprint || null
+  
+  // Always fetch sprint data (React Query will use cache if available)
+  // Only skip if we have it from state AND it's valid
+  const { data: sprintFromQuery, isLoading, isError, error } = useGetSprintById({
+    access: '',
+    sprintId: parseInt(sprintId || '0'),
+    enabled: !!sprintId, // Always fetch if we have a sprintId (React Query handles caching)
+  })
 
-  useEffect(() => {
-    // If sprint wasn't passed via state, fetch it from the server
-    if (!sprint && sprintId) {
-      setIsLoadingSprint(true)
-      axios.get(`${url}sprints/${sprintId}`)
-        .then((response) => {
-          console.log(response)
-          setSprint(response.data[0])
-          setIsLoadingSprint(false)
-        })
-        .catch((error) => {
-          console.error('Error fetching sprint:', error)
-          setIsLoadingSprint(false)
-        })
-    }
-  }, [sprintId, sprint])
-
-  const daysUntilDeadline = sprint
-    ? Math.ceil(
-        (new Date(sprint.deadline).getTime() - new Date().getTime()) /
-          (1000 * 60 * 60 * 24)
-      )
-    : 0
+  // Prefer state sprint (from navigation), fallback to query result
+  const sprint = sprintFromState || sprintFromQuery || null
 
   return (
     <div className="min-h-screen bg-[#121212] p-4 md:p-8">
@@ -73,7 +41,7 @@ const SprintPage = () => {
         </motion.div>
 
         {/* Sprint Summary Header */}
-        {isLoadingSprint ? (
+        {isLoading ? (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -86,57 +54,29 @@ const SprintPage = () => {
               <div className="h-4 bg-gray-700 rounded w-1/4"></div>
             </div>
           </motion.div>
-        ) : sprint ? (
+        ) : isError ? (
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="bg-[#1a1a1a] border-l-4 border-[#1DB954] rounded-2xl p-6 mb-8 shadow-lg"
+            className="bg-red-500/10 border-l-4 border-red-500 rounded-2xl p-6 mb-8 shadow-lg"
           >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex-1">
-                <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-                  {sprint.name}
-                </h1>
-                {sprint.description && (
-                  <p className="text-gray-300 text-sm md:text-base mb-4">
-                    {sprint.description}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            <div className="flex flex-wrap items-center gap-4 text-sm">
-              <div className="flex items-center gap-2 text-gray-400">
-                <Calendar className="w-4 h-4" />
-                <span>Due: {formatDate(sprint.deadline)}</span>
-                {sprint.status === 'A' && (
-                  <span
-                    className={`ml-2 px-2 py-1 rounded text-xs ${
-                      daysUntilDeadline < 7
-                        ? 'bg-red-500/20 text-red-400'
-                        : daysUntilDeadline < 14
-                          ? 'bg-yellow-500/20 text-yellow-400'
-                          : 'bg-[#1DB954]/20 text-[#1DB954]'
-                    }`}
-                  >
-                    {daysUntilDeadline > 0
-                      ? `${daysUntilDeadline} day${daysUntilDeadline !== 1 ? 's' : ''} left`
-                      : 'Overdue'}
-                  </span>
-                )}
-              </div>
-              <div className="flex items-center gap-2 text-gray-400">
-                <CheckCircle2 className="w-4 h-4" />
-                {/* <span>{sprint.tasks.filter((t: Task) => t.status === 'done').length} of {sprint.tasks.length} tasks completed</span> */}
-              </div>
-              <div className="flex items-center gap-2 text-gray-400">
-                <Clock className="w-4 h-4" />
-                <span>Updated {formatDate(sprint.updated_at)}</span>
-              </div>
-            </div>
+            <h2 className="text-xl font-bold text-red-400 mb-2">Error Loading Sprint</h2>
+            <p className="text-red-300 text-sm">{error?.message || 'Failed to load sprint data'}</p>
           </motion.div>
-        ) : null}
+        ) : sprint ? (
+          <SprintHeader sprint={sprint} />
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="bg-[#1a1a1a] border-l-4 border-gray-500 rounded-2xl p-6 mb-8 shadow-lg"
+          >
+            <h2 className="text-xl font-bold text-gray-400">Sprint not found</h2>
+            <p className="text-gray-500 text-sm">Unable to load sprint data.</p>
+          </motion.div>
+        )}
 
         {sprint && <TasksMain sprintId={sprint.id} />}
       </div>

@@ -1,8 +1,17 @@
 import axios from "axios"
 
-const URL = import.meta.env.VITE_API_URL
+// Get API URL from environment variables
+// Vite automatically replaces import.meta.env.VITE_* at build time
+// It reads from .env.production when mode=production
+// It reads from netlify.toml [build.environment] when building on Netlify
+const URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api/'
 
-console.log('URL', URL)
+// Log in development only
+if (import.meta.env.DEV) {
+  console.log('API URL:', URL)
+  console.log('Environment Mode:', import.meta.env.MODE)
+  console.log('VITE_API_URL from env:', import.meta.env.VITE_API_URL)
+}
 const axiosInstance = axios.create({
     baseURL: URL,
     withCredentials: true,
