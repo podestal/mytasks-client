@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Calendar, CheckCircle2, Clock, Edit2, Save, X, CheckCircle } from 'lucide-react'
-import { useNavigate } from '@tanstack/react-router'
+import { Calendar, CheckCircle2, Clock, Edit2, Save, X, Trash2 } from 'lucide-react'
 import type { Sprint } from '@/services/api/sprintService'
 import useUpdateSprint from '@/hooks/api/sprints/useUpdateSprint'
+import CompleteSprintButton from './CompleteSprintButton'
+import DeleteSprintModal from './DeleteSprintModal'
 
 interface SprintHeaderProps {
   sprint: Sprint
@@ -20,13 +21,13 @@ const formatDate = (dateString: string) => {
 
 const SprintHeader = ({ sprint }: SprintHeaderProps) => {
   const [isEditing, setIsEditing] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [editedName, setEditedName] = useState(sprint.name)
   const [editedDescription, setEditedDescription] = useState(sprint.description)
   const [editedDeadline, setEditedDeadline] = useState(
     sprint.deadline
   )
   const updateSprint = useUpdateSprint()
-  const navigate = useNavigate()
 
   const daysUntilDeadline = Math.ceil(
     (new Date(sprint.deadline).getTime() - new Date().getTime()) /
@@ -59,22 +60,6 @@ const SprintHeader = ({ sprint }: SprintHeaderProps) => {
     setIsEditing(false)
   }
 
-  const handleComplete = () => {
-    updateSprint.mutate(
-      {
-        access: '',
-        sprintId: sprint.id,
-        sprint: {
-          status: 'D',
-        },
-      },
-      {
-        onSuccess: () => {
-          navigate({ to: '/projects' })
-        },
-      }
-    )
-  }
 
   return (
     <motion.div
@@ -157,15 +142,7 @@ const SprintHeader = ({ sprint }: SprintHeaderProps) => {
                 </div>
                 <div className="flex items-center gap-2 ml-4">
                   {sprint.status === 'A' && (
-                    <button
-                      onClick={handleComplete}
-                      disabled={updateSprint.isPending}
-                      className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-[#1DB954] text-white rounded-lg hover:bg-[#1DB954]/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                      title="Mark sprint as complete"
-                    >
-                      <CheckCircle className="w-4 h-4" />
-                      {updateSprint.isPending ? 'Completing...' : 'Complete'}
-                    </button>
+                    <CompleteSprintButton sprintId={sprint.id} />
                   )}
                   <button
                     onClick={() => setIsEditing(true)}
@@ -173,6 +150,13 @@ const SprintHeader = ({ sprint }: SprintHeaderProps) => {
                     title="Edit sprint"
                   >
                     <Edit2 className="w-5 h-5" />
+                  </button>
+                  <button
+                    onClick={() => setIsDeleteModalOpen(true)}
+                    className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
+                    title="Delete sprint"
+                  >
+                    <Trash2 className="w-5 h-5" />
                   </button>
                 </div>
               </div>
@@ -214,6 +198,12 @@ const SprintHeader = ({ sprint }: SprintHeaderProps) => {
           </div>
         </div>
       )}
+
+      <DeleteSprintModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        sprint={sprint}
+      />
     </motion.div>
   )
 }

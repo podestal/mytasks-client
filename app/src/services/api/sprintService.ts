@@ -49,3 +49,7 @@ export const createSprintService = () => {
 export const updateSprintService = (sprintId: number) => {
     return new APIClient<Sprint, UpdateSprintRequest>(`/sprints/${sprintId}`)
 }
+
+export const deleteSprintService = (sprintId: number) => {
+    return new APIClient<Sprint, void>(`/sprints/${sprintId}`)
+}
